@@ -23,9 +23,10 @@ interface KanbanColumnProps {
   title: string;
   leads: LeadRecord[];
   accent: ColumnAccent;
+  onSelect: (lead: LeadRecord) => void;
 }
 
-export default function KanbanColumn({ title, leads, accent }: KanbanColumnProps) {
+export default function KanbanColumn({ title, leads, accent, onSelect }: KanbanColumnProps) {
   return (
     <div className="flex w-72 shrink-0 flex-col gap-3 rounded-2xl border border-border bg-surface/60 p-3 lg:w-auto">
       <div className="flex items-center gap-2 px-1">
@@ -44,7 +45,7 @@ export default function KanbanColumn({ title, leads, accent }: KanbanColumnProps
             אין לידים
           </p>
         ) : (
-          leads.map((lead) => <LeadCard key={lead.id} lead={lead} />)
+          leads.map((lead) => <LeadCard key={lead.id} lead={lead} onSelect={onSelect} />)
         )}
       </div>
     </div>

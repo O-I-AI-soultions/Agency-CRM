@@ -43,6 +43,8 @@ function mapLeadRecord(record: Airtable.Record<Airtable.FieldSet>): LeadRecord {
     assignedTo: assignedTo?.name ?? null,
     followUpCount: (fields["Follow-up Count"] as number) ?? null,
     createdTime: record._rawJson.createdTime,
+    email: (fields["Email"] as string) ?? null,
+    address: (fields["Address"] as string) ?? null,
   };
 }
 
@@ -82,6 +84,13 @@ export async function updateLeadStatus(
   await base(LEAD_TRACKER_TABLE).update(recordId, {
     Status: status,
   });
+}
+
+export async function updateLeadFields(
+  recordId: string,
+  fields: Record<string, unknown>
+): Promise<void> {
+  await base(LEAD_TRACKER_TABLE).update(recordId, fields);
 }
 
 export async function listClients(): Promise<ClientRecord[]> {

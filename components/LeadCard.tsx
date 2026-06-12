@@ -1,24 +1,6 @@
-import type { LeadRecord, Priority } from "@/lib/types";
+import type { LeadRecord } from "@/lib/types";
 import StatusActionButtons from "@/components/StatusActionButtons";
-import { computePriority } from "@/lib/priority";
-
-const PRIORITY_LABELS: Record<Priority, string> = {
-  High: "גבוהה",
-  Medium: "בינונית",
-  Low: "נמוכה",
-};
-
-const PRIORITY_CLASSES: Record<Priority, string> = {
-  High: "bg-warn-soft text-warn",
-  Medium: "bg-amber-soft text-amber",
-  Low: "bg-accent-soft text-accent-strong",
-};
-
-const PRIORITY_ICONS: Record<Priority, string> = {
-  High: "🔥",
-  Medium: "●",
-  Low: "↓",
-};
+import PriorityBadge from "@/components/PriorityBadge";
 
 function getHostname(url: string): string {
   try {
@@ -78,20 +60,18 @@ function StarIcon() {
 
 interface LeadCardProps {
   lead: LeadRecord;
+  onSelect: (lead: LeadRecord) => void;
 }
 
-export default function LeadCard({ lead }: LeadCardProps) {
-  const { level } = computePriority(lead);
-
+export default function LeadCard({ lead, onSelect }: LeadCardProps) {
   return (
-    <div className="space-y-2 rounded-xl border border-border bg-surface p-3 shadow-sm transition-shadow hover:shadow-md">
+    <div
+      onClick={() => onSelect(lead)}
+      className="cursor-pointer space-y-2 rounded-xl border border-border bg-surface p-3 shadow-sm transition-shadow hover:shadow-md"
+    >
       <div className="flex items-start justify-between gap-2">
         <h3 className="text-sm font-bold leading-snug text-foreground">{lead.businessName}</h3>
-        <span
-          className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${PRIORITY_CLASSES[level]}`}
-        >
-          {PRIORITY_ICONS[level]} {PRIORITY_LABELS[level]}
-        </span>
+        <PriorityBadge lead={lead} />
       </div>
 
       {(lead.city || lead.googleRating != null) && (
@@ -109,7 +89,10 @@ export default function LeadCard({ lead }: LeadCardProps) {
       {lead.notes && <p className="line-clamp-2 text-xs text-muted">{lead.notes}</p>}
 
       {(lead.phoneNumber || lead.websiteUrl || lead.googleMapsLink) && (
-        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="flex flex-wrap items-center gap-1.5 pt-1"
+        >
           {lead.phoneNumber && (
             <a
               href={`tel:${lead.phoneNumber}`}
@@ -149,7 +132,7 @@ export default function LeadCard({ lead }: LeadCardProps) {
         </div>
       )}
 
-      <div className="border-t border-border pt-2">
+      <div onClick={(e) => e.stopPropagation()} className="border-t border-border pt-2">
         <StatusActionButtons leadId={lead.id} currentStatus={lead.status} />
       </div>
     </div>

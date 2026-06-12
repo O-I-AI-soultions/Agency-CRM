@@ -28,6 +28,8 @@ export interface LeadRecord {
   assignedTo: string | null;
   followUpCount: number | null;
   createdTime: string;
+  email: string | null;
+  address: string | null;
 }
 
 export type ClientStatus = "Active" | "Inactive";
