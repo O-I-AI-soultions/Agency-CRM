@@ -57,6 +57,10 @@ export default function LeadDrawer({ lead, onClose, onUpdate }: LeadDrawerProps)
   const [openLeadId, setOpenLeadId] = useState<string | null>(lead?.id ?? null);
   const [toast, setToast] = useState<string | null>(null);
   const [savingFooter, setSavingFooter] = useState(false);
+  const [showConvertModal, setShowConvertModal] = useState(false);
+  const [setupFee, setSetupFee] = useState("");
+  const [monthlyRetainer, setMonthlyRetainer] = useState("");
+  const [convertSaving, setConvertSaving] = useState(false);
 
   const isOpen = lead !== null;
 
@@ -64,6 +68,9 @@ export default function LeadDrawer({ lead, onClose, onUpdate }: LeadDrawerProps)
     setOpenLeadId(lead.id);
     setLocalLead(lead);
     setNotesValue(lead.notes ?? "");
+    setShowConvertModal(false);
+    setSetupFee("");
+    setMonthlyRetainer("");
   }
 
   useEffect(() => {
@@ -151,12 +158,39 @@ export default function LeadDrawer({ lead, onClose, onUpdate }: LeadDrawerProps)
     }
   }
 
+  async function handleConvertConfirm() {
+    if (!localLead) return;
+    setConvertSaving(true);
+    try {
+      const res = await fetch(`/api/leads/${localLead.id}/convert`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          businessName: localLead.businessName,
+          setupFee: setupFee === "" ? 0 : Number(setupFee),
+          monthlyRetainer: monthlyRetainer === "" ? 0 : Number(monthlyRetainer),
+        }),
+      });
+      if (!res.ok) return;
+
+      const updated: LeadRecord = { ...localLead, status: "Converted" };
+      setLocalLead(updated);
+      setShowConvertModal(false);
+      onUpdate(updated);
+      showToast("🎉 לקוח חדש נוצר!");
+      setTimeout(() => onClose(), 600);
+    } finally {
+      setConvertSaving(false);
+    }
+  }
+
   const statusValue: KanbanStatus =
     localLead?.status && (KANBAN_STATUSES as readonly string[]).includes(localLead.status)
       ? (localLead.status as KanbanStatus)
       : "New Lead";
 
   const showMarkContacted = localLead?.status === "New Lead" || localLead?.status === null;
+  const showConvert = localLead?.status === "Pitch Sent";
 
   const pillClasses =
     "flex flex-1 items-center justify-center gap-1.5 rounded-full bg-background px-3 py-2 text-sm font-bold text-foreground transition-colors hover:bg-accent-soft hover:text-accent-strong";
@@ -371,9 +405,83 @@ export default function LeadDrawer({ lead, onClose, onUpdate }: LeadDrawerProps)
                 </button>
               </div>
             )}
+
+            {showConvert && (
+              <div className="sticky bottom-0 border-t border-border bg-surface p-4">
+                <button
+                  type="button"
+                  onClick={() => setShowConvertModal(true)}
+                  className="w-full rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong"
+                >
+                  ✓ המר ללקוח
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
+
+      {showConvertModal && localLead && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="w-full max-w-sm rounded-2xl bg-surface p-5 shadow-xl"
+          >
+            <h3 className="mb-4 text-lg font-black text-foreground">המרה ללקוח</h3>
+            <div className="space-y-3">
+              <label className="flex items-center justify-between gap-3 text-sm">
+                <span className="text-muted">כמה גביתם על הקמה? (Setup Fee)</span>
+                <span className="flex items-center gap-1">
+                  <span className="text-muted">₪</span>
+                  <input
+                    type="number"
+                    min="0"
+                    inputMode="numeric"
+                    value={setupFee}
+                    onChange={(e) => setSetupFee(e.target.value)}
+                    placeholder="0"
+                    className="w-24 rounded-lg border border-border bg-background px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
+                  />
+                </span>
+              </label>
+              <label className="flex items-center justify-between gap-3 text-sm">
+                <span className="text-muted">כמה גביתם בחודש? (Monthly)</span>
+                <span className="flex items-center gap-1">
+                  <span className="text-muted">₪</span>
+                  <input
+                    type="number"
+                    min="0"
+                    inputMode="numeric"
+                    value={monthlyRetainer}
+                    onChange={(e) => setMonthlyRetainer(e.target.value)}
+                    placeholder="0"
+                    className="w-24 rounded-lg border border-border bg-background px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
+                  />
+                </span>
+              </label>
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowConvertModal(false)}
+                disabled={convertSaving}
+                className="rounded-full bg-background px-4 py-2 text-sm font-bold text-foreground transition-colors hover:bg-accent-soft disabled:opacity-50"
+              >
+                ביטול
+              </button>
+              <button
+                type="button"
+                onClick={handleConvertConfirm}
+                disabled={convertSaving}
+                className="rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong disabled:opacity-50"
+              >
+                ✓ אשר
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

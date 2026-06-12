@@ -28,7 +28,9 @@ export default function KanbanBoard({ leads: initialLeads }: KanbanBoardProps) {
     setSelectedLead((prev) => (prev && prev.id === updated.id ? updated : prev));
   }
 
-  const filteredLeads = applyFilters(leads, filters);
+  const filteredLeads = applyFilters(leads, filters).filter(
+    (lead) => lead.status !== "Converted"
+  );
 
   const groups: Record<KanbanStatus | "Other", LeadRecord[]> = {
     "New Lead": [],
