@@ -59,6 +59,7 @@ export default function StatusActionButtons({ leadId, currentStatus }: StatusAct
           className={primaryClasses}
           disabled={isLoading}
           onClick={() => updateStatus("Contacted")}
+          suppressHydrationWarning
         >
           סומן כ&apos;נוצר קשר&apos;
         </button>
@@ -67,6 +68,7 @@ export default function StatusActionButtons({ leadId, currentStatus }: StatusAct
           className={outlineGrayClasses}
           disabled={isLoading}
           onClick={() => updateStatus("Not Interested")}
+          suppressHydrationWarning
         >
           לא מעוניין
         </button>
@@ -80,6 +82,7 @@ export default function StatusActionButtons({ leadId, currentStatus }: StatusAct
           className={primaryClasses}
           disabled={isLoading}
           onClick={() => updateStatus("Pitch Sent")}
+          suppressHydrationWarning
         >
           נשלחה הצעה
         </button>
@@ -88,6 +91,7 @@ export default function StatusActionButtons({ leadId, currentStatus }: StatusAct
           className={outlineGrayClasses}
           disabled={isLoading}
           onClick={() => updateStatus("Not Interested")}
+          suppressHydrationWarning
         >
           לא מעוניין
         </button>
@@ -100,6 +104,7 @@ export default function StatusActionButtons({ leadId, currentStatus }: StatusAct
         className={outlineGrayClasses}
         disabled={isLoading}
         onClick={() => updateStatus("Not Interested")}
+        suppressHydrationWarning
       >
         לא מעוניין
       </button>
@@ -111,6 +116,7 @@ export default function StatusActionButtons({ leadId, currentStatus }: StatusAct
         className={outlineBlueClasses}
         disabled={isLoading}
         onClick={() => updateStatus("New Lead")}
+        suppressHydrationWarning
       >
         החזר לטיפול
       </button>

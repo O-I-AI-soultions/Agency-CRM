@@ -53,6 +53,7 @@ export default function FilterBar({
           value={filters.search}
           onChange={(e) => onChange({ ...filters, search: e.target.value })}
           placeholder="חיפוש שם עסק..."
+          suppressHydrationWarning
           className="min-w-[180px] flex-1 rounded-full border border-border bg-surface px-4 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
         />
         <input
@@ -61,6 +62,7 @@ export default function FilterBar({
           value={filters.city}
           onChange={(e) => onChange({ ...filters, city: e.target.value })}
           placeholder="עיר"
+          suppressHydrationWarning
           className="min-w-[120px] rounded-full border border-border bg-surface px-4 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
         />
         <datalist id="city-options">
@@ -74,6 +76,7 @@ export default function FilterBar({
           value={filters.niche}
           onChange={(e) => onChange({ ...filters, niche: e.target.value })}
           placeholder="ניישה"
+          suppressHydrationWarning
           className="min-w-[120px] rounded-full border border-border bg-surface px-4 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
         />
         <datalist id="niche-options">
@@ -84,6 +87,7 @@ export default function FilterBar({
         <select
           value={filters.status}
           onChange={(e) => onChange({ ...filters, status: e.target.value })}
+          suppressHydrationWarning
           className={selectClasses}
         >
           <option value="">כל הסטטוסים</option>
@@ -101,6 +105,7 @@ export default function FilterBar({
               minRating: e.target.value ? Number(e.target.value) : null,
             })
           }
+          suppressHydrationWarning
           className={selectClasses}
         >
           <option value="">כל הדירוגים</option>
@@ -114,6 +119,7 @@ export default function FilterBar({
           <button
             type="button"
             onClick={() => onChange(DEFAULT_FILTERS)}
+            suppressHydrationWarning
             className="rounded-full border border-warn/30 px-3 py-2 text-sm font-bold text-warn transition-colors hover:bg-warn-soft"
           >
             × נקה
