@@ -11,7 +11,7 @@ export default async function LeadsPage() {
       <div>
         <h1 className="text-3xl font-black tracking-tight text-foreground">ניהול לידים</h1>
         <p className="mt-1 text-sm text-muted">
-          {leads.length} לידים בצנרת — לחיצה על כרטיס פותחת את פרטי הליד
+          לחיצה על כרטיס פותחת את פרטי הליד
         </p>
       </div>
       <KanbanBoard leads={leads} />

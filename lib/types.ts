@@ -30,6 +30,7 @@ export interface LeadRecord {
   createdTime: string;
   email: string | null;
   address: string | null;
+  niche: string | null;
 }
 
 export type ClientStatus = "Active" | "Inactive";

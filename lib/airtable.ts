@@ -45,6 +45,7 @@ function mapLeadRecord(record: Airtable.Record<Airtable.FieldSet>): LeadRecord {
     createdTime: record._rawJson.createdTime,
     email: (fields["Email"] as string) ?? null,
     address: (fields["Address"] as string) ?? null,
+    niche: (fields["Niche"] as string) ?? null,
   };
 }
 
