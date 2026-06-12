@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { LeadRecord, Priority } from "@/lib/types";
+import type { Partner } from "@/lib/auth";
 import { toWhatsAppNumber, buildWhatsAppMessage } from "@/lib/whatsapp";
 
 const PRIORITY_LABELS: Record<Priority, string> = {
@@ -22,15 +23,19 @@ const PRIORITY_ICONS: Record<Priority, string> = {
   Low: "↓",
 };
 
-const PARTNER_NAME = process.env.NEXT_PUBLIC_PARTNER_NAME ?? "O-I";
-
 interface CallListItem {
   lead: LeadRecord;
   score: number;
   level: Priority;
 }
 
-export default function CallListTable({ items }: { items: CallListItem[] }) {
+export default function CallListTable({
+  items,
+  partner,
+}: {
+  items: CallListItem[];
+  partner: Partner;
+}) {
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
   const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set());
 
@@ -111,7 +116,7 @@ export default function CallListTable({ items }: { items: CallListItem[] }) {
                   )}
                   {lead.phoneNumber && (
                     <a
-                      href={`https://wa.me/${toWhatsAppNumber(lead.phoneNumber)}?text=${buildWhatsAppMessage(PARTNER_NAME)}`}
+                      href={`https://wa.me/${toWhatsAppNumber(lead.phoneNumber)}?text=${buildWhatsAppMessage(partner)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="rounded-full border border-accent/30 px-3 py-1 text-xs font-bold text-accent transition-colors hover:bg-accent-soft"

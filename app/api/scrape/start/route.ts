@@ -1,4 +1,5 @@
 import { createScrapeHistoryRecord, countLeadTrackerRecords } from "@/lib/airtable";
+import { getPartnerFromSession } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
       return Response.json({ error: "Apify run did not return an id" }, { status: 502 });
     }
 
-    const triggeredBy = process.env.NEXT_PUBLIC_PARTNER_NAME || "Unknown";
+    const triggeredBy = getPartnerFromSession(request) ?? "Unknown";
 
     const historyRecordId = await createScrapeHistoryRecord({
       runId,

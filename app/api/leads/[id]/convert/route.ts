@@ -24,7 +24,6 @@ export async function POST(
     });
 
     revalidatePath("/leads");
-    revalidatePath("/call-list");
     revalidatePath("/clients");
 
     return Response.json({ ok: true });

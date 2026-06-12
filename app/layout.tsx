@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Rubik } from "next/font/google";
-import NavBar from "@/components/NavBar";
+import Sidebar from "@/components/Sidebar";
+import { getCurrentPartner } from "@/lib/auth-server";
 import "./globals.css";
 
 const rubik = Rubik({
@@ -13,16 +14,26 @@ export const metadata: Metadata = {
   description: "מערכת ניהול לידים ולקוחות - O-I",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const partner = await getCurrentPartner();
+
   return (
     <html lang="he" dir="rtl" className={`${rubik.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-background text-foreground">
-        <NavBar />
-        <main className="mx-auto max-w-6xl w-full px-4 py-8 sm:px-6 lg:px-8">{children}</main>
+      <body className="min-h-full bg-background text-foreground">
+        {partner ? (
+          <>
+            <Sidebar partner={partner} />
+            <main className="min-h-screen px-4 py-8 pt-20 sm:px-6 md:py-8 md:pr-8 md:pl-[18rem] lg:pl-[19rem]">
+              <div className="mx-auto max-w-6xl">{children}</div>
+            </main>
+          </>
+        ) : (
+          children
+        )}
       </body>
     </html>
   );

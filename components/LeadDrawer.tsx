@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { KANBAN_STATUSES, type KanbanStatus, type LeadRecord } from "@/lib/types";
+import type { Partner } from "@/lib/auth";
 import PriorityBadge from "@/components/PriorityBadge";
 import { toWhatsAppNumber, buildWhatsAppMessage } from "@/lib/whatsapp";
-
-const PARTNER_NAME = process.env.NEXT_PUBLIC_PARTNER_NAME ?? "O-I";
 
 const STATUS_LABELS: Record<KanbanStatus, string> = {
   "New Lead": "לידים חדשים",
@@ -47,11 +46,12 @@ function renderStars(rating: number): string {
 
 interface LeadDrawerProps {
   lead: LeadRecord | null;
+  partner: Partner;
   onClose: () => void;
   onUpdate: (updated: LeadRecord) => void;
 }
 
-export default function LeadDrawer({ lead, onClose, onUpdate }: LeadDrawerProps) {
+export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDrawerProps) {
   const [localLead, setLocalLead] = useState<LeadRecord | null>(lead);
   const [notesValue, setNotesValue] = useState(lead?.notes ?? "");
   const [openLeadId, setOpenLeadId] = useState<string | null>(lead?.id ?? null);
@@ -260,7 +260,7 @@ export default function LeadDrawer({ lead, onClose, onUpdate }: LeadDrawerProps)
                   )}
                   {localLead.phoneNumber ? (
                     <a
-                      href={`https://wa.me/${toWhatsAppNumber(localLead.phoneNumber)}?text=${buildWhatsAppMessage(PARTNER_NAME)}`}
+                      href={`https://wa.me/${toWhatsAppNumber(localLead.phoneNumber)}?text=${buildWhatsAppMessage(partner)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={pillClasses}

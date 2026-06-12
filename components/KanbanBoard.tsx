@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { KANBAN_STATUSES, type KanbanStatus, type LeadRecord } from "@/lib/types";
+import type { Partner } from "@/lib/auth";
 import { applyFilters, DEFAULT_FILTERS, type Filters } from "@/lib/filters";
 import KanbanColumn from "@/components/KanbanColumn";
 import LeadDrawer from "@/components/LeadDrawer";
@@ -16,9 +17,10 @@ const COLUMN_LABELS: Record<KanbanStatus, string> = {
 
 interface KanbanBoardProps {
   leads: LeadRecord[];
+  partner: Partner;
 }
 
-export default function KanbanBoard({ leads: initialLeads }: KanbanBoardProps) {
+export default function KanbanBoard({ leads: initialLeads, partner }: KanbanBoardProps) {
   const [leads, setLeads] = useState(initialLeads);
   const [selectedLead, setSelectedLead] = useState<LeadRecord | null>(null);
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
@@ -80,6 +82,7 @@ export default function KanbanBoard({ leads: initialLeads }: KanbanBoardProps) {
       </div>
       <LeadDrawer
         lead={selectedLead}
+        partner={partner}
         onClose={() => setSelectedLead(null)}
         onUpdate={handleUpdate}
       />

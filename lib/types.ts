@@ -1,3 +1,5 @@
+import type { Partner } from "@/lib/auth";
+
 export const KANBAN_STATUSES = [
   "New Lead",
   "Contacted",
@@ -9,7 +11,9 @@ export type KanbanStatus = (typeof KANBAN_STATUSES)[number];
 
 export type LeadStatus = KanbanStatus | "New" | "Qualified" | "Converted";
 
-export type Priority = "High" | "Medium" | "Low";
+export const PRIORITIES = ["High", "Medium", "Low"] as const;
+
+export type Priority = (typeof PRIORITIES)[number];
 
 export interface LeadRecord {
   id: string;
@@ -55,4 +59,37 @@ export interface ScrapeHistoryRecord {
   status: ScrapeRunStatus | null;
   leadsFound: number;
   triggeredBy: string;
+}
+
+export const TASK_STATUSES = ["To Do", "In Progress", "Done"] as const;
+
+export type TaskStatus = (typeof TASK_STATUSES)[number];
+
+export interface TaskRecord {
+  id: string;
+  title: string;
+  status: TaskStatus;
+  priority: Priority | null;
+  dueDate: string | null;
+  owner: Partner;
+  linkedLeadName: string | null;
+  linkedLeadId: string | null;
+  linkedClientName: string | null;
+  linkedClientId: string | null;
+  createdTime: string;
+  commentCount: number;
+}
+
+export interface TaskCommentRecord {
+  id: string;
+  taskId: string;
+  comment: string;
+  author: Partner;
+  date: string;
+}
+
+export interface LinkableRecord {
+  id: string;
+  name: string;
+  type: "lead" | "client";
 }

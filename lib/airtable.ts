@@ -1,13 +1,20 @@
 import "server-only";
 import Airtable from "airtable";
-import type {
-  ClientRecord,
-  ClientStatus,
-  KanbanStatus,
-  LeadRecord,
-  ScrapeHistoryRecord,
-  ScrapeRunStatus,
+import {
+  PRIORITIES,
+  TASK_STATUSES,
+  type ClientRecord,
+  type ClientStatus,
+  type KanbanStatus,
+  type LeadRecord,
+  type Priority,
+  type ScrapeHistoryRecord,
+  type ScrapeRunStatus,
+  type TaskCommentRecord,
+  type TaskRecord,
+  type TaskStatus,
 } from "@/lib/types";
+import type { Partner } from "@/lib/auth";
 
 const apiKey = process.env.AIRTABLE_API_KEY;
 const baseId = process.env.AIRTABLE_BASE_ID;
@@ -21,6 +28,8 @@ const base = new Airtable({ apiKey }).base(baseId);
 export const LEAD_TRACKER_TABLE = "Lead Tracker";
 export const CLIENTS_TABLE = "Clients";
 export const SCRAPE_HISTORY_TABLE = "Scrape History";
+export const TASKS_TABLE = "Tasks";
+export const TASK_COMMENTS_TABLE = "Task Comments";
 
 function mapLeadRecord(record: Airtable.Record<Airtable.FieldSet>): LeadRecord {
   const fields = record.fields;
@@ -193,4 +202,182 @@ export async function convertLeadToClient(
   await base(LEAD_TRACKER_TABLE).update(leadId, {
     Status: "Converted",
   });
+}
+
+function mapTaskRecord(
+  record: Airtable.Record<Airtable.FieldSet>,
+  commentCount = 0
+): TaskRecord {
+  const fields = record.fields;
+
+  return {
+    id: record.id,
+    title: (fields["Title"] as string) ?? "",
+    status: (fields["Status"] as TaskStatus) ?? "To Do",
+    priority: (fields["Priority"] as Priority) ?? null,
+    dueDate: (fields["Due Date"] as string) ?? null,
+    owner: (fields["Owner"] as Partner) ?? "איתי",
+    linkedLeadName: (fields["Linked Lead Name"] as string) ?? null,
+    linkedLeadId: (fields["Linked Lead ID"] as string) ?? null,
+    linkedClientName: (fields["Linked Client Name"] as string) ?? null,
+    linkedClientId: (fields["Linked Client ID"] as string) ?? null,
+    createdTime: record._rawJson.createdTime,
+    commentCount,
+  };
+}
+
+function mapTaskCommentRecord(record: Airtable.Record<Airtable.FieldSet>): TaskCommentRecord {
+  const fields = record.fields;
+
+  return {
+    id: record.id,
+    taskId: (fields["Task ID"] as string) ?? "",
+    comment: (fields["Comment"] as string) ?? "",
+    author: (fields["Author"] as Partner) ?? "איתי",
+    date: (fields["Date"] as string) ?? record._rawJson.createdTime,
+  };
+}
+
+export interface TaskFieldsInput {
+  title?: string;
+  status?: TaskStatus;
+  priority?: Priority | null;
+  dueDate?: string | null;
+  linkedLeadName?: string | null;
+  linkedLeadId?: string | null;
+  linkedClientName?: string | null;
+  linkedClientId?: string | null;
+}
+
+function buildTaskFields(input: TaskFieldsInput): Record<string, unknown> {
+  const fields: Record<string, unknown> = {};
+  if (input.title !== undefined) fields["Title"] = input.title;
+  if (input.status !== undefined) fields["Status"] = input.status;
+  if (input.priority !== undefined) fields["Priority"] = input.priority;
+  if (input.dueDate !== undefined) fields["Due Date"] = input.dueDate;
+  if (input.linkedLeadName !== undefined) fields["Linked Lead Name"] = input.linkedLeadName;
+  if (input.linkedLeadId !== undefined) fields["Linked Lead ID"] = input.linkedLeadId;
+  if (input.linkedClientName !== undefined) fields["Linked Client Name"] = input.linkedClientName;
+  if (input.linkedClientId !== undefined) fields["Linked Client ID"] = input.linkedClientId;
+  return fields;
+}
+
+export function parseTaskFieldsInput(body: unknown): TaskFieldsInput | { error: string } {
+  if (typeof body !== "object" || body === null) return { error: "Invalid request body" };
+  const data = body as Record<string, unknown>;
+  const fields: TaskFieldsInput = {};
+
+  if ("title" in data) {
+    if (typeof data.title !== "string" || !data.title.trim()) {
+      return { error: "Invalid title" };
+    }
+    fields.title = data.title.trim();
+  }
+
+  if ("status" in data) {
+    if (!(TASK_STATUSES as readonly string[]).includes(data.status as string)) {
+      return { error: "Invalid status" };
+    }
+    fields.status = data.status as TaskStatus;
+  }
+
+  if ("priority" in data) {
+    if (data.priority !== null && !(PRIORITIES as readonly string[]).includes(data.priority as string)) {
+      return { error: "Invalid priority" };
+    }
+    fields.priority = data.priority as Priority | null;
+  }
+
+  if ("dueDate" in data) {
+    if (data.dueDate !== null && typeof data.dueDate !== "string") {
+      return { error: "Invalid dueDate" };
+    }
+    fields.dueDate = data.dueDate as string | null;
+  }
+
+  for (const key of [
+    "linkedLeadName",
+    "linkedLeadId",
+    "linkedClientName",
+    "linkedClientId",
+  ] as const) {
+    if (key in data) {
+      const value = data[key];
+      if (value !== null && typeof value !== "string") {
+        return { error: `Invalid ${key}` };
+      }
+      fields[key] = value as string | null;
+    }
+  }
+
+  return fields;
+}
+
+export async function listTasks(): Promise<TaskRecord[]> {
+  const [taskRecords, commentRecords] = await Promise.all([
+    base(TASKS_TABLE).select().all(),
+    base(TASK_COMMENTS_TABLE).select({ fields: ["Task ID"] }).all(),
+  ]);
+
+  const commentCounts = new Map<string, number>();
+  for (const comment of commentRecords) {
+    const taskId = comment.fields["Task ID"] as string;
+    if (!taskId) continue;
+    commentCounts.set(taskId, (commentCounts.get(taskId) ?? 0) + 1);
+  }
+
+  return taskRecords.map((record) => mapTaskRecord(record, commentCounts.get(record.id) ?? 0));
+}
+
+export async function getTaskOwner(recordId: string): Promise<Partner | null> {
+  const record = await base(TASKS_TABLE).find(recordId);
+  return (record.fields["Owner"] as Partner) ?? null;
+}
+
+export async function createTask(
+  input: TaskFieldsInput & { owner: Partner }
+): Promise<TaskRecord> {
+  const fields = buildTaskFields(input);
+  fields["Owner"] = input.owner;
+  if (fields["Status"] === undefined) fields["Status"] = "To Do";
+
+  const record = await base(TASKS_TABLE).create(fields as Partial<Airtable.FieldSet>);
+  return mapTaskRecord(record, 0);
+}
+
+export async function updateTask(
+  recordId: string,
+  input: TaskFieldsInput
+): Promise<TaskRecord> {
+  const fields = buildTaskFields(input);
+  const record = await base(TASKS_TABLE).update(recordId, fields as Partial<Airtable.FieldSet>);
+  return mapTaskRecord(record);
+}
+
+export async function deleteTask(recordId: string): Promise<void> {
+  await base(TASKS_TABLE).destroy(recordId);
+}
+
+export async function listTaskComments(taskId: string): Promise<TaskCommentRecord[]> {
+  const records = await base(TASK_COMMENTS_TABLE)
+    .select({
+      filterByFormula: `{Task ID} = "${taskId}"`,
+      sort: [{ field: "Date", direction: "asc" }],
+    })
+    .all();
+  return records.map(mapTaskCommentRecord);
+}
+
+export async function createTaskComment(data: {
+  taskId: string;
+  comment: string;
+  author: Partner;
+}): Promise<TaskCommentRecord> {
+  const record = await base(TASK_COMMENTS_TABLE).create({
+    "Task ID": data.taskId,
+    Comment: data.comment,
+    Author: data.author,
+    Date: new Date().toISOString(),
+  });
+  return mapTaskCommentRecord(record);
 }

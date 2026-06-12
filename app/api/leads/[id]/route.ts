@@ -43,7 +43,6 @@ export async function PATCH(
     }
 
     revalidatePath("/leads");
-    revalidatePath("/call-list");
 
     return Response.json({ ok: true });
   } catch {

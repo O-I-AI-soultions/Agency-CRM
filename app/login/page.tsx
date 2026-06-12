@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { PARTNERS, type Partner } from "@/lib/auth";
 
 export default function LoginPage() {
-  const router = useRouter();
+  const [partner, setPartner] = useState<Partner | null>(null);
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -12,13 +12,19 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+
+    if (!partner) {
+      setError("בחר/י משתמש");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ partner, password }),
       });
 
       if (!res.ok) {
@@ -61,6 +67,27 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium text-foreground">מי אתה?</span>
+            <div className="flex gap-2">
+              {PARTNERS.map((name) => (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => setPartner(name)}
+                  className={
+                    "flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold transition focus:outline-none focus:ring-2 focus:ring-accent/20 " +
+                    (partner === name
+                      ? "border-accent bg-accent-soft text-accent"
+                      : "border-border bg-background text-foreground hover:border-accent/40")
+                  }
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
             <label htmlFor="password" className="text-sm font-medium text-foreground">
               סיסמה
             </label>
@@ -86,7 +113,7 @@ export default function LoginPage() {
             disabled={loading}
             className="mt-2 w-full rounded-xl bg-accent px-4 py-2.5 font-bold text-white transition hover:bg-accent-strong disabled:opacity-60"
           >
-            {loading ? "מתחבר..." : "התחבר"}
+            {loading ? "מתחבר..." : "כניסה"}
           </button>
         </form>
       </div>
