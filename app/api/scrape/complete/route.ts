@@ -1,6 +1,12 @@
 import { completeScrapeHistoryRecord, failScrapeHistoryRecord } from "@/lib/airtable";
+import { getPartnerFromSession } from "@/lib/auth";
 
 export async function PATCH(request: Request) {
+  const partner = getPartnerFromSession(request);
+  if (!partner) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const historyRecordId = body?.historyRecordId;

@@ -1,11 +1,15 @@
 import { Settings } from "lucide-react";
+import { redirect } from "next/navigation";
 import { getCurrentPartner } from "@/lib/auth-server";
 import ChangePasswordForm from "@/components/ChangePasswordForm";
 
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
-  const partner = (await getCurrentPartner()) ?? "איתי";
+  const partner = await getCurrentPartner();
+  if (!partner) {
+    redirect("/login");
+  }
 
   return (
     <div className="space-y-6">

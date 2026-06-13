@@ -10,14 +10,14 @@ interface TopHeaderProps {
 
 export default function TopHeader({ title, subtitle, partner }: TopHeaderProps) {
   return (
-    <header className="card-shadow flex h-16 items-center gap-4 rounded-2xl bg-surface px-7">
-      <div>
-        <h1 className="font-display text-xl font-semibold text-foreground">{title}</h1>
-        <p className="text-[13px] text-muted">{subtitle}</p>
+    <header className="card-shadow flex flex-wrap items-center gap-4 rounded-2xl bg-surface px-4 py-3 sm:h-16 sm:flex-nowrap sm:px-7 sm:py-0">
+      <div className="min-w-0 flex-1 sm:flex-initial">
+        <h1 className="truncate font-display text-xl font-semibold text-foreground">{title}</h1>
+        <p className="truncate text-[13px] text-muted">{subtitle}</p>
       </div>
 
-      <div className="flex flex-1 justify-center">
-        <div className="flex w-full max-w-[340px] items-center gap-2 rounded-[10px] border border-border bg-background px-3.5 py-2 transition-shadow focus-within:shadow-[0_0_0_3px_rgba(59,130,246,0.15)]">
+      <div className="order-last w-full sm:order-none sm:flex sm:flex-1 sm:justify-center">
+        <div className="flex w-full items-center gap-2 rounded-[10px] border border-border bg-background px-3.5 py-2 transition-shadow focus-within:shadow-[0_0_0_3px_rgba(59,130,246,0.15)] sm:max-w-[340px]">
           <Search size={16} className="text-muted-2 shrink-0" />
           <input
             type="text"

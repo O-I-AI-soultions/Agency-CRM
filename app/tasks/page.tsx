@@ -1,4 +1,5 @@
 import { CheckSquare } from "lucide-react";
+import { redirect } from "next/navigation";
 import { listClients, listLeads, listRoadmapItems, listRoadmapTasks, listTasks } from "@/lib/airtable";
 import { getCurrentPartner } from "@/lib/auth-server";
 import type { LinkableRecord } from "@/lib/types";
@@ -13,6 +14,11 @@ export default async function TasksPage({
 }: {
   searchParams: Promise<{ tab?: string }>;
 }) {
+  const partner = await getCurrentPartner();
+  if (!partner) {
+    redirect("/login");
+  }
+
   const { tab } = await searchParams;
   const activeTab = getActiveTasksTab(tab);
 
@@ -23,7 +29,6 @@ export default async function TasksPage({
     listRoadmapItems(),
     listRoadmapTasks(),
   ]);
-  const partner = (await getCurrentPartner()) ?? "איתי";
 
   const records: LinkableRecord[] = [
     ...leads.map((lead): LinkableRecord => ({ id: lead.id, name: lead.businessName, type: "lead" })),

@@ -2,6 +2,11 @@ import { createScrapeHistoryRecord, countLeadTrackerRecords } from "@/lib/airtab
 import { getPartnerFromSession } from "@/lib/auth";
 
 export async function POST(request: Request) {
+  const sessionPartner = getPartnerFromSession(request);
+  if (!sessionPartner) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const niche = typeof body?.niche === "string" ? body.niche.trim() : "";
@@ -51,14 +56,12 @@ export async function POST(request: Request) {
       return Response.json({ error: "Apify run did not return an id" }, { status: 502 });
     }
 
-    const triggeredBy = getPartnerFromSession(request) ?? "Unknown";
-
     const historyRecordId = await createScrapeHistoryRecord({
       runId,
       city,
       niche,
       limit,
-      triggeredBy,
+      triggeredBy: sessionPartner,
     });
 
     return Response.json({ runId, historyRecordId, leadCountBefore });

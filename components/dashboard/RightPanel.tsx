@@ -20,7 +20,7 @@ export default function RightPanel({ leads, clients, tasks }: RightPanelProps) {
     });
 
   return (
-    <div className="flex w-[300px] shrink-0 flex-col gap-4">
+    <div className="flex w-full flex-col gap-4 lg:w-[300px] lg:shrink-0">
       <SalesPerformanceCard leads={leads} clients={clients} />
       <RecentContactsCard leads={leads} />
       <OpenTasksCard tasks={sortedTasks} />

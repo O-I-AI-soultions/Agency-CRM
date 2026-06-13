@@ -47,7 +47,7 @@ export default function StatusToggle({
         type="button"
         onClick={handleClick}
         disabled={loading}
-        className={`rounded-full px-3 py-1 text-sm font-bold transition-opacity cursor-pointer hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50 ${
+        className={`rounded-full px-3 py-2 text-sm font-bold transition-opacity cursor-pointer hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50 ${
           isActive
             ? "bg-accent-soft text-accent-strong"
             : "bg-border text-muted"

@@ -31,8 +31,17 @@ export default function RoadmapCard({ item, tasks, onSelect }: RoadmapCardProps)
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={() => onSelect(item)}
-      className="flex w-72 shrink-0 flex-col gap-3 overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition-shadow hover:shadow-md"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect(item);
+        }
+      }}
+      aria-label={`פתח יעד: ${item.title}`}
+      className="flex w-72 shrink-0 flex-col gap-3 overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-accent/40"
     >
       <div className={`h-1.5 w-full ${colors.bar}`} />
 

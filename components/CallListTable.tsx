@@ -121,7 +121,7 @@ export default function CallListTable({
                   {lead.phoneNumber && (
                     <a
                       href={`tel:${lead.phoneNumber}`}
-                      className="inline-flex items-center gap-1 rounded-full border border-accent/30 px-3 py-1 text-xs font-bold text-accent transition-colors hover:bg-accent-soft"
+                      className="inline-flex items-center gap-1 rounded-full border border-accent/30 px-3 py-2 text-xs font-bold text-accent transition-colors hover:bg-accent-soft"
                     >
                       <Phone size={12} /> חייג
                     </a>
@@ -131,7 +131,7 @@ export default function CallListTable({
                       href={`https://wa.me/${toWhatsAppNumber(lead.phoneNumber)}?text=${buildWhatsAppMessage(partner)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 rounded-full border border-accent/30 px-3 py-1 text-xs font-bold text-accent transition-colors hover:bg-accent-soft"
+                      className="inline-flex items-center gap-1 rounded-full border border-accent/30 px-3 py-2 text-xs font-bold text-accent transition-colors hover:bg-accent-soft"
                     >
                       <MessageCircle size={12} /> וואטסאפ
                     </a>
@@ -140,7 +140,7 @@ export default function CallListTable({
                     type="button"
                     disabled={loadingIds.has(lead.id)}
                     onClick={() => markContacted(lead.id)}
-                    className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs font-bold text-white transition-colors hover:bg-accent-strong disabled:opacity-50"
+                    className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-accent-strong disabled:opacity-50"
                   >
                     <Check size={12} /> סומן כ&apos;צור קשר&apos;
                   </button>

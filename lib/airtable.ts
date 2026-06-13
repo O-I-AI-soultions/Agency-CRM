@@ -33,6 +33,10 @@ if (!apiKey || !baseId) {
 
 const base = new Airtable({ apiKey }).base(baseId);
 
+function escapeFormulaValue(value: string): string {
+  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
 export const LEAD_TRACKER_TABLE = "Lead Tracker";
 export const CLIENTS_TABLE = "Clients";
 export const SCRAPE_HISTORY_TABLE = "Scrape History";
@@ -372,7 +376,7 @@ export async function deleteTask(recordId: string): Promise<void> {
 export async function listTaskComments(taskId: string): Promise<TaskCommentRecord[]> {
   const records = await base(TASK_COMMENTS_TABLE)
     .select({
-      filterByFormula: `{Task ID} = "${taskId}"`,
+      filterByFormula: `{Task ID} = "${escapeFormulaValue(taskId)}"`,
       sort: [{ field: "Date", direction: "asc" }],
     })
     .all();
@@ -673,7 +677,7 @@ export async function createRoadmapTask(input: RoadmapTaskCreateInput): Promise<
 
 export async function getPartnerPasswordHash(partner: Partner): Promise<string | null> {
   const records = await base(PARTNERS_TABLE)
-    .select({ filterByFormula: `{Name} = "${partner}"`, maxRecords: 1 })
+    .select({ filterByFormula: `{Name} = "${escapeFormulaValue(partner)}"`, maxRecords: 1 })
     .all();
 
   const record = records[0];
@@ -685,7 +689,7 @@ export async function getPartnerPasswordHash(partner: Partner): Promise<string |
 
 export async function setPartnerPasswordHash(partner: Partner, hash: string): Promise<void> {
   const records = await base(PARTNERS_TABLE)
-    .select({ filterByFormula: `{Name} = "${partner}"`, maxRecords: 1 })
+    .select({ filterByFormula: `{Name} = "${escapeFormulaValue(partner)}"`, maxRecords: 1 })
     .all();
 
   const record = records[0];

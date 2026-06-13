@@ -237,7 +237,7 @@ export default function TaskDrawer({
               type="button"
               onClick={onClose}
               aria-label="סגור"
-              className="absolute left-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-muted transition-colors hover:bg-background hover:text-foreground"
+              className="absolute left-4 top-4 flex h-11 w-11 items-center justify-center rounded-full text-muted transition-colors hover:bg-background hover:text-foreground"
             >
               <X size={18} />
             </button>

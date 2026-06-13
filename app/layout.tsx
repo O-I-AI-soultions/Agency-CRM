@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Rubik, Sora } from "next/font/google";
 import Sidebar from "@/components/Sidebar";
 import { getCurrentPartner } from "@/lib/auth-server";
@@ -18,6 +18,11 @@ const sora = Sora({
 export const metadata: Metadata = {
   title: "O-I CRM",
   description: "מערכת ניהול לידים ולקוחות - O-I",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default async function RootLayout({

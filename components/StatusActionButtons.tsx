@@ -38,11 +38,11 @@ export default function StatusActionButtons({ leadId, currentStatus }: StatusAct
   };
 
   const primaryClasses =
-    "rounded-full px-3 py-1 text-xs font-bold bg-accent text-white hover:bg-accent-strong disabled:opacity-50 transition-colors";
+    "rounded-full px-3 py-2 text-xs font-bold bg-accent text-white hover:bg-accent-strong disabled:opacity-50 transition-colors";
   const outlineGrayClasses =
-    "rounded-full px-3 py-1 text-xs font-bold border border-warn/30 text-warn hover:bg-warn-soft disabled:opacity-50 transition-colors";
+    "rounded-full px-3 py-2 text-xs font-bold border border-warn/30 text-warn hover:bg-warn-soft disabled:opacity-50 transition-colors";
   const outlineBlueClasses =
-    "rounded-full px-3 py-1 text-xs font-bold border border-accent/30 text-accent hover:bg-accent-soft disabled:opacity-50 transition-colors";
+    "rounded-full px-3 py-2 text-xs font-bold border border-accent/30 text-accent hover:bg-accent-soft disabled:opacity-50 transition-colors";
 
   let buttons: React.ReactNode;
 

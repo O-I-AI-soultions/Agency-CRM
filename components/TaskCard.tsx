@@ -59,8 +59,17 @@ export default function TaskCard({ task, onSelect }: TaskCardProps) {
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={() => onSelect(task)}
-      className="cursor-pointer space-y-2 rounded-xl border border-border bg-surface p-3 shadow-sm transition-shadow hover:shadow-md"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect(task);
+        }
+      }}
+      aria-label={`פתח משימה: ${task.title}`}
+      className="cursor-pointer space-y-2 rounded-xl border border-border bg-surface p-3 shadow-sm transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-accent/40"
     >
       <div className="flex items-start justify-between gap-2">
         <h3 className="text-sm font-bold leading-snug text-foreground">{task.title}</h3>

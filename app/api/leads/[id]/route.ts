@@ -1,11 +1,17 @@
 import { revalidatePath } from "next/cache";
 import { updateLeadFields, updateLeadStatus } from "@/lib/airtable";
 import { KANBAN_STATUSES, type KanbanStatus } from "@/lib/types";
+import { getPartnerFromSession } from "@/lib/auth";
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const partner = getPartnerFromSession(request);
+  if (!partner) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { id } = await params;
 
   try {

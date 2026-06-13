@@ -1,4 +1,5 @@
 import { PartyPopper } from "lucide-react";
+import { redirect } from "next/navigation";
 import { listLeads, listScrapeHistory } from "@/lib/airtable";
 import { computePriority } from "@/lib/priority";
 import { getCurrentPartner } from "@/lib/auth-server";
@@ -40,12 +41,16 @@ export default async function LeadsPage({
 }: {
   searchParams: Promise<{ tab?: string }>;
 }) {
+  const partner = await getCurrentPartner();
+  if (!partner) {
+    redirect("/login");
+  }
+
   const { tab } = await searchParams;
   const activeTab = getActiveTab(tab);
   const meta = TAB_META[activeTab];
 
   const leads = await listLeads();
-  const partner = (await getCurrentPartner()) ?? "איתי";
 
   let content: React.ReactNode;
 

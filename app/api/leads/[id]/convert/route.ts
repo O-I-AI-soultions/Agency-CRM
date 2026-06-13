@@ -1,10 +1,16 @@
 import { revalidatePath } from "next/cache";
 import { convertLeadToClient } from "@/lib/airtable";
+import { getPartnerFromSession } from "@/lib/auth";
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const partner = getPartnerFromSession(request);
+  if (!partner) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { id } = await params;
 
   try {

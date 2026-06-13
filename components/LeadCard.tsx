@@ -21,8 +21,17 @@ interface LeadCardProps {
 export default function LeadCard({ lead, onSelect, accentColor, index }: LeadCardProps) {
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={() => onSelect(lead)}
-      className="card-shadow card-shadow-hover animate-fade-up cursor-pointer space-y-2 rounded-b-xl rounded-t-sm border border-t-2 border-border bg-surface p-3"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect(lead);
+        }
+      }}
+      aria-label={`פתח פרטי ליד: ${lead.businessName}`}
+      className="card-shadow card-shadow-hover animate-fade-up cursor-pointer space-y-2 rounded-b-xl rounded-t-sm border border-t-2 border-border bg-surface p-3 focus:outline-none focus:ring-2 focus:ring-accent/40"
       style={{ borderTopColor: accentColor, animationDelay: `${index * 0.06}s` }}
     >
       <div className="flex items-start justify-between gap-2">
@@ -52,7 +61,7 @@ export default function LeadCard({ lead, onSelect, accentColor, index }: LeadCar
           {lead.phoneNumber && (
             <a
               href={`tel:${lead.phoneNumber}`}
-              className="flex items-center gap-1 rounded-full bg-background px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-accent-soft hover:text-accent-strong"
+              className="flex items-center gap-1 rounded-full bg-background px-2 py-2 text-xs font-medium text-foreground transition-colors hover:bg-accent-soft hover:text-accent-strong"
               title="טלפון"
             >
               <Phone size={16} />
@@ -65,7 +74,7 @@ export default function LeadCard({ lead, onSelect, accentColor, index }: LeadCar
               href={lead.websiteUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 rounded-full bg-background px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-accent-soft hover:text-accent-strong"
+              className="flex items-center gap-1 rounded-full bg-background px-2 py-2 text-xs font-medium text-foreground transition-colors hover:bg-accent-soft hover:text-accent-strong"
               title="אתר"
             >
               <Globe size={16} />
@@ -78,7 +87,7 @@ export default function LeadCard({ lead, onSelect, accentColor, index }: LeadCar
               href={lead.googleMapsLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 rounded-full bg-background px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-accent-soft hover:text-accent-strong"
+              className="flex items-center gap-1 rounded-full bg-background px-2 py-2 text-xs font-medium text-foreground transition-colors hover:bg-accent-soft hover:text-accent-strong"
               title="מפה"
             >
               <MapPin size={16} />

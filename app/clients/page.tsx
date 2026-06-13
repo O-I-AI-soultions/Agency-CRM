@@ -1,9 +1,16 @@
+import { redirect } from "next/navigation";
 import { listClients } from "@/lib/airtable";
+import { getCurrentPartner } from "@/lib/auth-server";
 import ClientsTable from "@/components/ClientsTable";
 
 export const dynamic = "force-dynamic";
 
 export default async function ClientsPage() {
+  const partner = await getCurrentPartner();
+  if (!partner) {
+    redirect("/login");
+  }
+
   const clients = await listClients();
 
   return (
