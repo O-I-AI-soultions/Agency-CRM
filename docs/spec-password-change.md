@@ -2,7 +2,7 @@
 
 ## Context
 
-The CRM has two partners — `"איתי"` (Itay) and `"עומרי"` (Omri). Passwords are currently stored as Vercel environment variables (`ITAY_PASSWORD`, `OMRI_PASSWORD`). The goal is to move password storage to Airtable so either partner can change their password from inside the CRM without touching Vercel.
+The CRM has two partners — `"איתי"` (Itay) and `"עמרי"` (Omri). Passwords are currently stored as Vercel environment variables (`ITAY_PASSWORD`, `OMRI_PASSWORD`). The goal is to move password storage to Airtable so either partner can change their password from inside the CRM without touching Vercel.
 
 Auth uses HMAC session tokens (see `lib/auth.ts`). Login lives in `app/api/login/route.ts`.
 
@@ -16,12 +16,12 @@ Create a new table in the existing Airtable base (`appecLcxk0qS8mNGV`) called **
 
 | Field name     | Type   | Notes                                  |
 |-----------------|--------|----------------------------------------|
-| `Name`          | Text   | Primary field. Values: `"איתי"`, `"עומרי"` |
+| `Name`          | Text   | Primary field. Values: `"איתי"`, `"עמרי"` |
 | `PasswordHash`  | Text   | bcrypt hash (~60 chars), never plaintext |
 
 Pre-populate with two rows, one per partner:
 - `"איתי"` → choose a fresh, strong password at seed time (do NOT reuse any password that has ever appeared in this repo/spec). Hash it with `bcryptjs.hashSync(password, 12)` before inserting. Communicate the plaintext to Itay out-of-band only — never write it to disk/repo.
-- `"עומרי"` → leave empty (Omri keeps logging in via his existing `OMRI_PASSWORD` env var until he sets his own password via `/settings`).
+- `"עמרי"` → seed with a fresh bcrypt-hashed password, same as above.
 
 Use `AIRTABLE_API_KEY` and `AIRTABLE_BASE_ID` from env (already present in the codebase via `lib/airtable.ts`).
 

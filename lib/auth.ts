@@ -2,9 +2,9 @@ import { createHmac, timingSafeEqual } from "crypto";
 
 export const SESSION_COOKIE_NAME = "oi_dashboard_session";
 
-export type Partner = "איתי" | "עומרי";
+export type Partner = "איתי" | "עמרי";
 
-export const PARTNERS: Partner[] = ["איתי", "עומרי"];
+export const PARTNERS: Partner[] = ["איתי", "עמרי"];
 
 function getSecret(): string {
   const secret = process.env.AUTH_SECRET;
@@ -34,7 +34,7 @@ export function verifySessionToken(token: string | undefined): { partner: Partne
     const data = JSON.parse(Buffer.from(payload, "base64url").toString()) as {
       partner?: string;
     };
-    if (data.partner === "איתי" || data.partner === "עומרי") {
+    if (data.partner === "איתי" || data.partner === "עמרי") {
       return { partner: data.partner };
     }
     return null;

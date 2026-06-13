@@ -477,7 +477,7 @@ export default function RoadmapDrawer({
                                 >
                                   <option value="">לא משויך</option>
                                   <option value="איתי">איתי</option>
-                                  <option value="עומרי">עומרי</option>
+                                  <option value="עמרי">עמרי</option>
                                 </select>
 
                                 <input

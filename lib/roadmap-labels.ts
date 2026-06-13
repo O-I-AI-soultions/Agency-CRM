@@ -58,10 +58,10 @@ export function roadmapColorClasses(color: string | null): ColorClasses {
 
 export const ASSIGNEE_TO_HEBREW: Record<string, string> = {
   Itay: "איתי",
-  Omri: "עומרי",
+  Omri: "עמרי",
 };
 
 export const HEBREW_TO_ASSIGNEE: Record<string, "Itay" | "Omri"> = {
   איתי: "Itay",
-  עומרי: "Omri",
+  עמרי: "Omri",
 };

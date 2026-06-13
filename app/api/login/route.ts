@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     password?: string;
   };
 
-  if (partner !== "איתי" && partner !== "עומרי") {
+  if (partner !== "איתי" && partner !== "עמרי") {
     return Response.json({ error: "סיסמה שגויה" }, { status: 401 });
   }
 
@@ -18,13 +18,7 @@ export async function POST(request: Request) {
   }
 
   const storedHash = await getPartnerPasswordHash(partner as Partner);
-  let valid = false;
-  if (storedHash) {
-    valid = await bcrypt.compare(password, storedHash);
-  } else if (partner === "עומרי" && process.env.OMRI_PASSWORD) {
-    // Temporary fallback until Omri sets his own password via /settings.
-    valid = password === process.env.OMRI_PASSWORD;
-  }
+  const valid = storedHash ? await bcrypt.compare(password, storedHash) : false;
 
   if (!valid) {
     return Response.json({ error: "סיסמה שגויה" }, { status: 401 });

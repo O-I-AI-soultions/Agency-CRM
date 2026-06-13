@@ -7,8 +7,8 @@ import TaskCard from "@/components/TaskCard";
 import TaskDrawer from "@/components/TaskDrawer";
 
 const OTHER_PARTNER: Record<Partner, Partner> = {
-  איתי: "עומרי",
-  עומרי: "איתי",
+  איתי: "עמרי",
+  עמרי: "איתי",
 };
 
 interface TasksBoardProps {

@@ -98,7 +98,7 @@ export const ROADMAP_COLORS = ["Blue", "Green", "Purple", "Orange", "Red"] as co
 
 export type RoadmapColor = (typeof ROADMAP_COLORS)[number];
 
-export const ROADMAP_OWNERS = ["איתי", "עומרי", "שנינו"] as const;
+export const ROADMAP_OWNERS = ["איתי", "עמרי", "שנינו"] as const;
 
 export type RoadmapOwner = (typeof ROADMAP_OWNERS)[number];
 
