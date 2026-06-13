@@ -2,12 +2,20 @@ import "server-only";
 import Airtable from "airtable";
 import {
   PRIORITIES,
+  ROADMAP_COLORS,
+  ROADMAP_OWNERS,
+  ROADMAP_TASK_ASSIGNEES,
   TASK_STATUSES,
   type ClientRecord,
   type ClientStatus,
   type KanbanStatus,
   type LeadRecord,
   type Priority,
+  type RoadmapColor,
+  type RoadmapOwner,
+  type RoadmapRecord,
+  type RoadmapTaskAssignee,
+  type RoadmapTaskRecord,
   type ScrapeHistoryRecord,
   type ScrapeRunStatus,
   type TaskCommentRecord,
@@ -30,6 +38,8 @@ export const CLIENTS_TABLE = "Clients";
 export const SCRAPE_HISTORY_TABLE = "Scrape History";
 export const TASKS_TABLE = "Tasks";
 export const TASK_COMMENTS_TABLE = "Task Comments";
+export const ROADMAP_TABLE = "Roadmap";
+export const ROADMAP_TASKS_TABLE = "Roadmap Tasks";
 
 function mapLeadRecord(record: Airtable.Record<Airtable.FieldSet>): LeadRecord {
   const fields = record.fields;
@@ -380,4 +390,247 @@ export async function createTaskComment(data: {
     Date: new Date().toISOString(),
   });
   return mapTaskCommentRecord(record);
+}
+
+function mapRoadmapRecord(record: Airtable.Record<Airtable.FieldSet>): RoadmapRecord {
+  const fields = record.fields;
+  const linkedTasks = fields["Roadmap Tasks"] as string[] | undefined;
+
+  return {
+    id: record.id,
+    title: (fields["Title"] as string) ?? "",
+    description: (fields["Description"] as string) ?? null,
+    status: (fields["Status"] as string) ?? null,
+    owner: (fields["Owner"] as RoadmapOwner) ?? null,
+    category: (fields["Category"] as string) ?? null,
+    startDate: (fields["Start Date"] as string) ?? null,
+    endDate: (fields["End Date"] as string) ?? null,
+    color: (fields["Color"] as RoadmapColor) ?? null,
+    taskIds: linkedTasks ?? [],
+    createdTime: record._rawJson.createdTime,
+  };
+}
+
+function mapRoadmapTaskRecord(record: Airtable.Record<Airtable.FieldSet>): RoadmapTaskRecord {
+  const fields = record.fields;
+  const milestone = fields["Milestone"] as string[] | undefined;
+
+  return {
+    id: record.id,
+    title: (fields["Title"] as string) ?? "",
+    status: (fields["Status"] as TaskStatus) ?? "To Do",
+    category: (fields["Category"] as string) ?? null,
+    dueDate: (fields["Due Date"] as string) ?? null,
+    assignedTo: (fields["Assigned To"] as RoadmapTaskAssignee) ?? null,
+    notes: (fields["Notes"] as string) ?? null,
+    milestoneIds: milestone ?? [],
+  };
+}
+
+export interface RoadmapFieldsInput {
+  title?: string;
+  description?: string | null;
+  status?: string | null;
+  owner?: RoadmapOwner | null;
+  category?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  color?: RoadmapColor | null;
+}
+
+const ROADMAP_STATUS_CHOICES = [
+  "Not Started",
+  "In Progress",
+  "Done",
+  "לא התחיל",
+  "בתהליך",
+  "הושלם",
+];
+
+const ROADMAP_CATEGORY_CHOICES = [
+  "Infrastructure",
+  "Ongoing Operations",
+  "מכירות",
+  "תפעול",
+  "שיווק",
+  "מוצר",
+];
+
+function buildRoadmapFields(input: RoadmapFieldsInput): Record<string, unknown> {
+  const fields: Record<string, unknown> = {};
+  if (input.title !== undefined) fields["Title"] = input.title;
+  if (input.description !== undefined) fields["Description"] = input.description;
+  if (input.status !== undefined) fields["Status"] = input.status;
+  if (input.owner !== undefined) fields["Owner"] = input.owner;
+  if (input.category !== undefined) fields["Category"] = input.category;
+  if (input.startDate !== undefined) fields["Start Date"] = input.startDate;
+  if (input.endDate !== undefined) fields["End Date"] = input.endDate;
+  if (input.color !== undefined) fields["Color"] = input.color;
+  return fields;
+}
+
+export function parseRoadmapFieldsInput(body: unknown): RoadmapFieldsInput | { error: string } {
+  if (typeof body !== "object" || body === null) return { error: "Invalid request body" };
+  const data = body as Record<string, unknown>;
+  const fields: RoadmapFieldsInput = {};
+
+  if ("title" in data) {
+    if (typeof data.title !== "string" || !data.title.trim()) {
+      return { error: "Invalid title" };
+    }
+    fields.title = data.title.trim();
+  }
+
+  if ("description" in data) {
+    if (data.description !== null && typeof data.description !== "string") {
+      return { error: "Invalid description" };
+    }
+    fields.description = data.description as string | null;
+  }
+
+  if ("status" in data) {
+    if (data.status !== null && !ROADMAP_STATUS_CHOICES.includes(data.status as string)) {
+      return { error: "Invalid status" };
+    }
+    fields.status = data.status as string | null;
+  }
+
+  if ("owner" in data) {
+    if (data.owner !== null && !(ROADMAP_OWNERS as readonly string[]).includes(data.owner as string)) {
+      return { error: "Invalid owner" };
+    }
+    fields.owner = data.owner as RoadmapOwner | null;
+  }
+
+  if ("category" in data) {
+    if (data.category !== null && !ROADMAP_CATEGORY_CHOICES.includes(data.category as string)) {
+      return { error: "Invalid category" };
+    }
+    fields.category = data.category as string | null;
+  }
+
+  if ("startDate" in data) {
+    if (data.startDate !== null && typeof data.startDate !== "string") {
+      return { error: "Invalid startDate" };
+    }
+    fields.startDate = data.startDate as string | null;
+  }
+
+  if ("endDate" in data) {
+    if (data.endDate !== null && typeof data.endDate !== "string") {
+      return { error: "Invalid endDate" };
+    }
+    fields.endDate = data.endDate as string | null;
+  }
+
+  if ("color" in data) {
+    if (data.color !== null && !(ROADMAP_COLORS as readonly string[]).includes(data.color as string)) {
+      return { error: "Invalid color" };
+    }
+    fields.color = data.color as RoadmapColor | null;
+  }
+
+  return fields;
+}
+
+export async function listRoadmapItems(): Promise<RoadmapRecord[]> {
+  const records = await base(ROADMAP_TABLE)
+    .select({ sort: [{ field: "Start Date", direction: "asc" }] })
+    .all();
+  return records.map(mapRoadmapRecord);
+}
+
+export async function createRoadmapItem(input: RoadmapFieldsInput): Promise<RoadmapRecord> {
+  const fields = buildRoadmapFields(input);
+  if (fields["Status"] === undefined) fields["Status"] = "Not Started";
+
+  const record = await base(ROADMAP_TABLE).create(fields as Partial<Airtable.FieldSet>);
+  return mapRoadmapRecord(record);
+}
+
+export async function updateRoadmapItem(
+  recordId: string,
+  input: RoadmapFieldsInput
+): Promise<RoadmapRecord> {
+  const fields = buildRoadmapFields(input);
+  const record = await base(ROADMAP_TABLE).update(recordId, fields as Partial<Airtable.FieldSet>);
+  return mapRoadmapRecord(record);
+}
+
+export async function deleteRoadmapItem(recordId: string): Promise<void> {
+  await base(ROADMAP_TABLE).destroy(recordId);
+}
+
+export interface RoadmapTaskFieldsInput {
+  status?: TaskStatus;
+  dueDate?: string | null;
+  assignedTo?: RoadmapTaskAssignee | null;
+  notes?: string | null;
+}
+
+function buildRoadmapTaskFields(input: RoadmapTaskFieldsInput): Record<string, unknown> {
+  const fields: Record<string, unknown> = {};
+  if (input.status !== undefined) fields["Status"] = input.status;
+  if (input.dueDate !== undefined) fields["Due Date"] = input.dueDate;
+  if (input.assignedTo !== undefined) fields["Assigned To"] = input.assignedTo;
+  if (input.notes !== undefined) fields["Notes"] = input.notes;
+  return fields;
+}
+
+export function parseRoadmapTaskFieldsInput(
+  body: unknown
+): RoadmapTaskFieldsInput | { error: string } {
+  if (typeof body !== "object" || body === null) return { error: "Invalid request body" };
+  const data = body as Record<string, unknown>;
+  const fields: RoadmapTaskFieldsInput = {};
+
+  if ("status" in data) {
+    if (!(TASK_STATUSES as readonly string[]).includes(data.status as string)) {
+      return { error: "Invalid status" };
+    }
+    fields.status = data.status as TaskStatus;
+  }
+
+  if ("dueDate" in data) {
+    if (data.dueDate !== null && typeof data.dueDate !== "string") {
+      return { error: "Invalid dueDate" };
+    }
+    fields.dueDate = data.dueDate as string | null;
+  }
+
+  if ("assignedTo" in data) {
+    if (
+      data.assignedTo !== null &&
+      !(ROADMAP_TASK_ASSIGNEES as readonly string[]).includes(data.assignedTo as string)
+    ) {
+      return { error: "Invalid assignedTo" };
+    }
+    fields.assignedTo = data.assignedTo as RoadmapTaskAssignee | null;
+  }
+
+  if ("notes" in data) {
+    if (data.notes !== null && typeof data.notes !== "string") {
+      return { error: "Invalid notes" };
+    }
+    fields.notes = data.notes as string | null;
+  }
+
+  return fields;
+}
+
+export async function listRoadmapTasks(): Promise<RoadmapTaskRecord[]> {
+  const records = await base(ROADMAP_TASKS_TABLE).select().all();
+  return records.map(mapRoadmapTaskRecord);
+}
+
+export async function updateRoadmapTask(
+  recordId: string,
+  input: RoadmapTaskFieldsInput
+): Promise<RoadmapTaskRecord> {
+  const fields = buildRoadmapTaskFields(input);
+  const record = await base(ROADMAP_TASKS_TABLE).update(
+    recordId,
+    fields as Partial<Airtable.FieldSet>
+  );
+  return mapRoadmapTaskRecord(record);
 }

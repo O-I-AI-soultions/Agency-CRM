@@ -93,3 +93,40 @@ export interface LinkableRecord {
   name: string;
   type: "lead" | "client";
 }
+
+export const ROADMAP_COLORS = ["Blue", "Green", "Purple", "Orange", "Red"] as const;
+
+export type RoadmapColor = (typeof ROADMAP_COLORS)[number];
+
+export const ROADMAP_OWNERS = ["איתי", "עומרי", "שנינו"] as const;
+
+export type RoadmapOwner = (typeof ROADMAP_OWNERS)[number];
+
+export const ROADMAP_TASK_ASSIGNEES = ["Itay", "Omri"] as const;
+
+export type RoadmapTaskAssignee = (typeof ROADMAP_TASK_ASSIGNEES)[number];
+
+export interface RoadmapRecord {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string | null;
+  owner: RoadmapOwner | null;
+  category: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  color: RoadmapColor | null;
+  taskIds: string[];
+  createdTime: string;
+}
+
+export interface RoadmapTaskRecord {
+  id: string;
+  title: string;
+  status: TaskStatus;
+  category: string | null;
+  dueDate: string | null;
+  assignedTo: RoadmapTaskAssignee | null;
+  notes: string | null;
+  milestoneIds: string[];
+}
