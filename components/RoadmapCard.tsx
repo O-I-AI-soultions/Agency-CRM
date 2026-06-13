@@ -24,8 +24,9 @@ interface RoadmapCardProps {
 export default function RoadmapCard({ item, tasks, onSelect }: RoadmapCardProps) {
   const tone = normalizeRoadmapStatus(item.status);
   const colors = roadmapColorClasses(item.color);
-  const total = tasks.length;
-  const done = tasks.filter((t) => t.status === "Done").length;
+  const topLevelTasks = tasks.filter((t) => !t.parentId);
+  const total = topLevelTasks.length;
+  const done = topLevelTasks.filter((t) => t.status === "Done").length;
   const progress = total > 0 ? Math.round((done / total) * 100) : 0;
 
   return (

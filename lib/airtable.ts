@@ -40,6 +40,7 @@ export const TASKS_TABLE = "Tasks";
 export const TASK_COMMENTS_TABLE = "Task Comments";
 export const ROADMAP_TABLE = "Roadmap";
 export const ROADMAP_TASKS_TABLE = "Roadmap Tasks";
+export const PARTNERS_TABLE = "Partners";
 
 function mapLeadRecord(record: Airtable.Record<Airtable.FieldSet>): LeadRecord {
   const fields = record.fields;
@@ -414,6 +415,8 @@ function mapRoadmapRecord(record: Airtable.Record<Airtable.FieldSet>): RoadmapRe
 function mapRoadmapTaskRecord(record: Airtable.Record<Airtable.FieldSet>): RoadmapTaskRecord {
   const fields = record.fields;
   const milestone = fields["Milestone"] as string[] | undefined;
+  const parentTask = fields["Parent Task"] as string[] | undefined;
+  const subtasks = fields["From field: Parent Task"] as string[] | undefined;
 
   return {
     id: record.id,
@@ -424,6 +427,8 @@ function mapRoadmapTaskRecord(record: Airtable.Record<Airtable.FieldSet>): Roadm
     assignedTo: (fields["Assigned To"] as RoadmapTaskAssignee) ?? null,
     notes: (fields["Notes"] as string) ?? null,
     milestoneIds: milestone ?? [],
+    parentId: parentTask?.[0] ?? null,
+    subtaskIds: subtasks ?? [],
   };
 }
 
@@ -633,4 +638,61 @@ export async function updateRoadmapTask(
     fields as Partial<Airtable.FieldSet>
   );
   return mapRoadmapTaskRecord(record);
+}
+
+export interface RoadmapTaskCreateInput {
+  title: string;
+  parentId: string;
+}
+
+export function parseRoadmapTaskCreateInput(
+  body: unknown
+): RoadmapTaskCreateInput | { error: string } {
+  if (typeof body !== "object" || body === null) return { error: "Invalid request body" };
+  const data = body as Record<string, unknown>;
+
+  if (typeof data.title !== "string" || !data.title.trim()) {
+    return { error: "Invalid title" };
+  }
+
+  if (typeof data.parentId !== "string" || !data.parentId.trim()) {
+    return { error: "Invalid parentId" };
+  }
+
+  return { title: data.title.trim(), parentId: data.parentId };
+}
+
+export async function createRoadmapTask(input: RoadmapTaskCreateInput): Promise<RoadmapTaskRecord> {
+  const record = await base(ROADMAP_TASKS_TABLE).create({
+    Title: input.title,
+    Status: "To Do",
+    "Parent Task": [input.parentId],
+  } as Partial<Airtable.FieldSet>);
+  return mapRoadmapTaskRecord(record);
+}
+
+export async function getPartnerPasswordHash(partner: Partner): Promise<string | null> {
+  const records = await base(PARTNERS_TABLE)
+    .select({ filterByFormula: `{Name} = "${partner}"`, maxRecords: 1 })
+    .all();
+
+  const record = records[0];
+  if (!record) return null;
+
+  const hash = record.fields["PasswordHash"] as string | undefined;
+  return hash && hash.trim() ? hash : null;
+}
+
+export async function setPartnerPasswordHash(partner: Partner, hash: string): Promise<void> {
+  const records = await base(PARTNERS_TABLE)
+    .select({ filterByFormula: `{Name} = "${partner}"`, maxRecords: 1 })
+    .all();
+
+  const record = records[0];
+  if (record) {
+    await base(PARTNERS_TABLE).update(record.id, { PasswordHash: hash });
+    return;
+  }
+
+  await base(PARTNERS_TABLE).create({ Name: partner, PasswordHash: hash });
 }

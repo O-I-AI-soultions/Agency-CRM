@@ -53,11 +53,11 @@ export default function KanbanBoard({ leads: initialLeads, partner }: KanbanBoar
   }
 
   const columns = [
-    { title: COLUMN_LABELS["New Lead"], leads: groups["New Lead"], accent: "sky" as const },
-    { title: COLUMN_LABELS.Contacted, leads: groups.Contacted, accent: "amber" as const },
-    { title: COLUMN_LABELS["Pitch Sent"], leads: groups["Pitch Sent"], accent: "accent" as const },
-    { title: COLUMN_LABELS["Not Interested"], leads: groups["Not Interested"], accent: "warn" as const },
-    { title: "אחר", leads: groups.Other, accent: "muted" as const },
+    { title: COLUMN_LABELS["New Lead"], leads: groups["New Lead"], accent: "new" as const },
+    { title: COLUMN_LABELS.Contacted, leads: groups.Contacted, accent: "review" as const },
+    { title: COLUMN_LABELS["Pitch Sent"], leads: groups["Pitch Sent"], accent: "proposal" as const },
+    { title: COLUMN_LABELS["Not Interested"], leads: groups["Not Interested"], accent: "lost" as const },
+    { title: "אחר", leads: groups.Other, accent: "negotiation" as const },
   ];
 
   return (

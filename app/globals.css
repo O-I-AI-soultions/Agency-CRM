@@ -1,40 +1,96 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f6f4f0;
-  --foreground: #211d18;
+  --background: #f4f6fb;
+  --foreground: #111827;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-surface: #ffffff;
-  --color-muted: #8c8478;
-  --color-border: #e7e1d6;
+  --color-muted: #6b7280;
+  --color-muted-2: #9ca3af;
+  --color-border: #e5e8f0;
 
-  --color-accent: #0f6e5c;
-  --color-accent-strong: #0a5444;
-  --color-accent-soft: #e2efe9;
+  --color-accent: #3b82f6;
+  --color-accent-strong: #2563eb;
+  --color-accent-soft: #dbeafe;
 
-  --color-warn: #b14e29;
-  --color-warn-soft: #f7e8df;
+  --color-green: #10b981;
+  --color-green-soft: #d1fae5;
 
-  --color-amber: #b9821c;
-  --color-amber-soft: #f7eed9;
+  --color-warn: #ef4444;
+  --color-warn-soft: #fee2e2;
 
-  --color-sky: #2f6f9e;
-  --color-sky-soft: #e3eef4;
+  --color-amber: #f59e0b;
+  --color-amber-soft: #fef3c7;
 
-  --color-purple: #7c5cbf;
-  --color-purple-soft: #efe9f7;
+  --color-sky: #0d9488;
+  --color-sky-soft: #ccfbf1;
+
+  --color-purple: #8b5cf6;
+  --color-purple-soft: #ede9fe;
+
+  /* Kanban column accents */
+  --col-new: #3b82f6;
+  --col-review: #374151;
+  --col-proposal: #f59e0b;
+  --col-negotiation: #0d9488;
+  --col-lost: #7c5cbf;
+
+  /* Sidebar */
+  --color-sidebar-bg: #12172b;
+  --color-sidebar-active: #1e2640;
+  --color-sidebar-border: rgba(255, 255, 255, 0.06);
 
   --font-sans: var(--font-rubik);
+  --font-display: var(--font-sora);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-display), var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Card depth */
+.card-shadow {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.07),
+    0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.card-shadow-hover {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card-shadow-hover:hover {
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.12),
+    0 8px 24px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+/* Staggered fade-up entrance */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  opacity: 0;
+  animation: fadeUp 0.4s ease forwards;
 }
 
 /* Slim horizontal scrollbar for the Kanban board on narrow viewports */

@@ -1,10 +1,7 @@
 import { cookies } from "next/headers";
+import bcrypt from "bcryptjs";
 import { createSessionToken, SESSION_COOKIE_NAME, type Partner } from "@/lib/auth";
-
-const PARTNER_PASSWORDS: Record<Partner, string | undefined> = {
-  "איתי": process.env.ITAY_PASSWORD,
-  "עומרי": process.env.OMRI_PASSWORD,
-};
+import { getPartnerPasswordHash } from "@/lib/airtable";
 
 export async function POST(request: Request) {
   const { partner, password } = (await request.json()) as {
@@ -16,12 +13,24 @@ export async function POST(request: Request) {
     return Response.json({ error: "סיסמה שגויה" }, { status: 401 });
   }
 
-  const expected = PARTNER_PASSWORDS[partner];
-  if (!password || !expected || password !== expected) {
+  if (!password) {
     return Response.json({ error: "סיסמה שגויה" }, { status: 401 });
   }
 
-  const token = createSessionToken(partner);
+  const storedHash = await getPartnerPasswordHash(partner as Partner);
+  let valid = false;
+  if (storedHash) {
+    valid = await bcrypt.compare(password, storedHash);
+  } else if (partner === "עומרי" && process.env.OMRI_PASSWORD) {
+    // Temporary fallback until Omri sets his own password via /settings.
+    valid = password === process.env.OMRI_PASSWORD;
+  }
+
+  if (!valid) {
+    return Response.json({ error: "סיסמה שגויה" }, { status: 401 });
+  }
+
+  const token = createSessionToken(partner as Partner);
   (await cookies()).set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

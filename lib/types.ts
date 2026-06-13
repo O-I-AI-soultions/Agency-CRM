@@ -129,4 +129,6 @@ export interface RoadmapTaskRecord {
   assignedTo: RoadmapTaskAssignee | null;
   notes: string | null;
   milestoneIds: string[];
+  parentId: string | null;
+  subtaskIds: string[];
 }

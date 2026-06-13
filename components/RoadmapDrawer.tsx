@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, X } from "lucide-react";
 import {
   ROADMAP_COLORS,
   ROADMAP_OWNERS,
@@ -50,6 +50,7 @@ interface RoadmapDrawerProps {
   onUpdated: (item: RoadmapRecord) => void;
   onDeleted: (id: string) => void;
   onTaskUpdated: (task: RoadmapTaskRecord) => void;
+  onTaskCreated: (task: RoadmapTaskRecord) => void;
 }
 
 export default function RoadmapDrawer({
@@ -61,6 +62,7 @@ export default function RoadmapDrawer({
   onUpdated,
   onDeleted,
   onTaskUpdated,
+  onTaskCreated,
 }: RoadmapDrawerProps) {
   const isOpen = item !== null || isNew;
 
@@ -74,6 +76,9 @@ export default function RoadmapDrawer({
   const [endDate, setEndDate] = useState(toDateInput(item?.endDate ?? null));
   const [openKey, setOpenKey] = useState<string | null>(isNew ? "new" : item?.id ?? null);
   const [saving, setSaving] = useState(false);
+  const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
+  const [addingSubtaskFor, setAddingSubtaskFor] = useState<string | null>(null);
+  const [subtaskTitle, setSubtaskTitle] = useState("");
 
   const currentKey = isNew ? "new" : item?.id ?? null;
   if (currentKey !== openKey) {
@@ -195,6 +200,34 @@ export default function RoadmapDrawer({
     if (updated) onTaskUpdated(updated);
   }
 
+  function toggleExpanded(taskId: string) {
+    setExpandedTasks((prev) => {
+      const next = new Set(prev);
+      if (next.has(taskId)) {
+        next.delete(taskId);
+      } else {
+        next.add(taskId);
+      }
+      return next;
+    });
+  }
+
+  async function handleAddSubtask(parentId: string) {
+    const title = subtaskTitle.trim();
+    if (!title) return;
+    setSubtaskTitle("");
+    setAddingSubtaskFor(null);
+    setExpandedTasks((prev) => new Set(prev).add(parentId));
+    const res = await fetch("/api/roadmap-tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, parentId }),
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    onTaskCreated(data.task as RoadmapTaskRecord);
+  }
+
   async function handleCreate() {
     if (!title.trim()) return;
     setSaving(true);
@@ -231,7 +264,9 @@ export default function RoadmapDrawer({
     onClose();
   }
 
-  const linkedTasks = item ? tasks.filter((t) => item.taskIds.includes(t.id)) : [];
+  const linkedTasks = item
+    ? tasks.filter((t) => item.taskIds.includes(t.id) && !t.parentId)
+    : [];
   const doneCount = linkedTasks.filter((t) => t.status === "Done").length;
 
   return (
@@ -393,56 +428,130 @@ export default function RoadmapDrawer({
                         משימות ({doneCount}/{linkedTasks.length})
                       </h3>
                       <div className="space-y-2">
-                        {linkedTasks.map((task) => (
-                          <div
-                            key={task.id}
-                            className="space-y-2 rounded-lg border border-border bg-background p-2"
-                          >
-                            <label className="flex items-start gap-2">
-                              <input
-                                type="checkbox"
-                                checked={task.status === "Done"}
-                                onChange={() => handleTaskToggle(task)}
-                                className="mt-0.5 h-4 w-4 shrink-0 accent-accent"
-                              />
-                              <span
-                                className={`text-sm font-medium ${
-                                  task.status === "Done"
-                                    ? "text-muted line-through"
-                                    : "text-foreground"
-                                }`}
-                              >
-                                {task.title}
-                              </span>
-                            </label>
+                        {linkedTasks.map((task) => {
+                          const subtasks = tasks.filter((t) => t.parentId === task.id);
+                          const subtaskDone = subtasks.filter((t) => t.status === "Done").length;
+                          const expanded = expandedTasks.has(task.id);
 
-                            <div className="flex flex-wrap items-center gap-2 pr-6 text-xs">
-                              <select
-                                value={task.assignedTo ? ASSIGNEE_TO_HEBREW[task.assignedTo] : ""}
-                                onChange={(e) => handleTaskAssigneeChange(task, e.target.value)}
-                                className="rounded-md border border-border bg-surface px-1.5 py-0.5 text-xs font-medium text-foreground"
-                              >
-                                <option value="">לא משויך</option>
-                                <option value="איתי">איתי</option>
-                                <option value="עומרי">עומרי</option>
-                              </select>
+                          return (
+                            <div
+                              key={task.id}
+                              className="space-y-2 rounded-lg border border-border bg-background p-2"
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <label className="flex flex-1 items-start gap-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={task.status === "Done"}
+                                    onChange={() => handleTaskToggle(task)}
+                                    className="mt-0.5 h-4 w-4 shrink-0 accent-accent"
+                                  />
+                                  <span
+                                    className={`text-sm font-medium ${
+                                      task.status === "Done"
+                                        ? "text-muted line-through"
+                                        : "text-foreground"
+                                    }`}
+                                  >
+                                    {task.title}
+                                  </span>
+                                </label>
+
+                                {subtasks.length > 0 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleExpanded(task.id)}
+                                    className="flex shrink-0 items-center gap-1 rounded-full bg-surface px-2 py-0.5 text-xs font-bold text-muted transition-colors hover:text-foreground"
+                                  >
+                                    {subtaskDone}/{subtasks.length}
+                                    {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                                  </button>
+                                )}
+                              </div>
+
+                              <div className="flex flex-wrap items-center gap-2 pr-6 text-xs">
+                                <select
+                                  value={task.assignedTo ? ASSIGNEE_TO_HEBREW[task.assignedTo] : ""}
+                                  onChange={(e) => handleTaskAssigneeChange(task, e.target.value)}
+                                  className="rounded-md border border-border bg-surface px-1.5 py-0.5 text-xs font-medium text-foreground"
+                                >
+                                  <option value="">לא משויך</option>
+                                  <option value="איתי">איתי</option>
+                                  <option value="עומרי">עומרי</option>
+                                </select>
+
+                                <input
+                                  type="date"
+                                  value={toDateInput(task.dueDate)}
+                                  onChange={(e) => handleTaskDueDateChange(task, e.target.value)}
+                                  className="rounded-md border border-border bg-surface px-1.5 py-0.5 text-xs font-medium text-foreground"
+                                />
+                              </div>
 
                               <input
-                                type="date"
-                                value={toDateInput(task.dueDate)}
-                                onChange={(e) => handleTaskDueDateChange(task, e.target.value)}
-                                className="rounded-md border border-border bg-surface px-1.5 py-0.5 text-xs font-medium text-foreground"
+                                defaultValue={task.notes ?? ""}
+                                onBlur={(e) => handleTaskNotesBlur(task, e.target.value)}
+                                placeholder="הערות"
+                                className="w-full rounded-md border border-border bg-surface px-1.5 py-1 pr-6 text-xs text-foreground placeholder:text-muted"
                               />
+
+                              {expanded && subtasks.length > 0 && (
+                                <div className="space-y-1.5 border-r-2 border-border pr-3">
+                                  {subtasks.map((sub) => (
+                                    <label key={sub.id} className="flex items-center gap-2">
+                                      <input
+                                        type="checkbox"
+                                        checked={sub.status === "Done"}
+                                        onChange={() => handleTaskToggle(sub)}
+                                        className="h-3.5 w-3.5 shrink-0 accent-accent"
+                                      />
+                                      <span
+                                        className={`text-xs font-medium ${
+                                          sub.status === "Done"
+                                            ? "text-muted line-through"
+                                            : "text-foreground"
+                                        }`}
+                                      >
+                                        {sub.title}
+                                      </span>
+                                    </label>
+                                  ))}
+                                </div>
+                              )}
+
+                              {addingSubtaskFor === task.id ? (
+                                <div className="flex items-center gap-2 pr-3">
+                                  <input
+                                    autoFocus
+                                    value={subtaskTitle}
+                                    onChange={(e) => setSubtaskTitle(e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") handleAddSubtask(task.id);
+                                      if (e.key === "Escape") {
+                                        setAddingSubtaskFor(null);
+                                        setSubtaskTitle("");
+                                      }
+                                    }}
+                                    onBlur={() => {
+                                      if (subtaskTitle.trim()) handleAddSubtask(task.id);
+                                      else setAddingSubtaskFor(null);
+                                    }}
+                                    placeholder="כותרת משימת המשנה"
+                                    className="flex-1 rounded-md border border-border bg-surface px-1.5 py-1 text-xs text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
+                                  />
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => setAddingSubtaskFor(task.id)}
+                                  className="flex items-center gap-1 pr-3 text-xs font-medium text-muted transition-colors hover:text-foreground"
+                                >
+                                  <Plus size={12} /> הוסף משימת משנה
+                                </button>
+                              )}
                             </div>
-
-                            <input
-                              defaultValue={task.notes ?? ""}
-                              onBlur={(e) => handleTaskNotesBlur(task, e.target.value)}
-                              placeholder="הערות"
-                              className="w-full rounded-md border border-border bg-surface px-1.5 py-1 pr-6 text-xs text-foreground placeholder:text-muted"
-                            />
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}

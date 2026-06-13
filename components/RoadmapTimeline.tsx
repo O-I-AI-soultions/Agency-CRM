@@ -72,6 +72,10 @@ export default function RoadmapTimeline({
     setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
   }
 
+  function handleTaskCreated(task: RoadmapTaskRecord) {
+    setTasks((prev) => [...prev, task]);
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -162,6 +166,7 @@ export default function RoadmapTimeline({
         onUpdated={handleUpdated}
         onDeleted={handleDeleted}
         onTaskUpdated={handleTaskUpdated}
+        onTaskCreated={handleTaskCreated}
       />
     </div>
   );

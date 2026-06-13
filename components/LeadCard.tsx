@@ -14,13 +14,16 @@ function getHostname(url: string): string {
 interface LeadCardProps {
   lead: LeadRecord;
   onSelect: (lead: LeadRecord) => void;
+  accentColor: string;
+  index: number;
 }
 
-export default function LeadCard({ lead, onSelect }: LeadCardProps) {
+export default function LeadCard({ lead, onSelect, accentColor, index }: LeadCardProps) {
   return (
     <div
       onClick={() => onSelect(lead)}
-      className="cursor-pointer space-y-2 rounded-xl border border-border bg-surface p-3 shadow-sm transition-shadow hover:shadow-md"
+      className="card-shadow card-shadow-hover animate-fade-up cursor-pointer space-y-2 rounded-b-xl rounded-t-sm border border-t-2 border-border bg-surface p-3"
+      style={{ borderTopColor: accentColor, animationDelay: `${index * 0.06}s` }}
     >
       <div className="flex items-start justify-between gap-2">
         <h3 className="text-sm font-bold leading-snug text-foreground">{lead.businessName}</h3>
