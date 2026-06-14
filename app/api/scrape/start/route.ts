@@ -40,7 +40,9 @@ export async function POST(request: Request) {
           searchStringsArray: [`${niche} ב${city}`],
           maxCrawledPlacesPerSearch: limit,
           website: "withoutWebsite",
-          language: "he",
+          // Apify's input schema uses Google's legacy locale code for
+          // Hebrew ("iw"), not the standard "he".
+          language: "iw",
         }),
       }
     );
