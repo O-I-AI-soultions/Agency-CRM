@@ -20,15 +20,15 @@ const PRIORITY_ICONS: Record<Priority, typeof Flame> = {
 };
 
 const PRIORITY_CLASSES: Record<Priority, string> = {
-  High: "bg-warn-soft text-warn-strong",
-  Medium: "bg-amber-soft text-amber-strong",
-  Low: "bg-sky-soft text-sky",
+  High: "tag tag-warn",
+  Medium: "tag tag-amber",
+  Low: "tag tag-sky",
 };
 
 const STATUS_CLASSES: Record<TaskStatus, string> = {
-  "To Do": "bg-border text-muted",
-  "In Progress": "bg-sky-soft text-sky",
-  Done: "bg-accent-soft text-accent-strong",
+  "To Do": "tag tag-muted",
+  "In Progress": "tag tag-accent",
+  Done: "tag tag-green",
 };
 
 function formatDate(iso: string): string {
@@ -69,36 +69,32 @@ export default function TaskCard({ task, onSelect }: TaskCardProps) {
         }
       }}
       aria-label={`פתח משימה: ${task.title}`}
-      className="cursor-pointer space-y-2 rounded-xl border border-border bg-surface p-3 shadow-sm transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-accent/40"
+      className="panel panel-hover cursor-pointer space-y-2 p-3 focus:outline-none focus:ring-2 focus:ring-accent/40"
     >
       <div className="flex items-start justify-between gap-2">
-        <h3 className="text-sm font-bold leading-snug text-foreground">{task.title}</h3>
+        <h3 className="font-display text-sm font-bold leading-snug text-foreground">{task.title}</h3>
         {task.priority && PriorityIcon && (
-          <span
-            className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${PRIORITY_CLASSES[task.priority]}`}
-          >
+          <span className={`shrink-0 ${PRIORITY_CLASSES[task.priority]}`}>
             <PriorityIcon size={12} /> {PRIORITY_LABELS[task.priority]}
           </span>
         )}
       </div>
 
       {LinkedIcon && linkedName && (
-        <span className="inline-flex items-center gap-1 rounded-full bg-background px-2 py-0.5 text-xs font-medium text-muted">
+        <span className="inline-flex items-center gap-1 rounded-md border border-border bg-surface-2 px-2 py-0.5 text-xs font-medium text-muted">
           <LinkedIcon size={12} /> {linkedName}
         </span>
       )}
 
       <div className="flex flex-wrap items-center gap-2 text-xs">
-        <span className={`rounded-full px-2 py-0.5 font-bold ${STATUS_CLASSES[task.status]}`}>
-          {TASK_STATUS_LABELS[task.status]}
-        </span>
+        <span className={STATUS_CLASSES[task.status]}>{TASK_STATUS_LABELS[task.status]}</span>
         {task.dueDate && (
-          <span className={overdue ? "font-bold text-warn-strong" : "text-muted"}>
+          <span className={`font-mono ${overdue ? "font-bold text-warn" : "text-muted"}`}>
             {formatDate(task.dueDate)}
           </span>
         )}
         {task.commentCount > 0 && (
-          <span className="inline-flex items-center gap-1 text-muted">
+          <span className="inline-flex items-center gap-1 font-mono text-muted">
             <MessageCircle size={12} /> {task.commentCount}
           </span>
         )}

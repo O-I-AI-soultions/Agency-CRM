@@ -41,13 +41,13 @@ export default function RoadmapCard({ item, tasks, onSelect }: RoadmapCardProps)
         }
       }}
       aria-label={`פתח יעד: ${item.title}`}
-      className="flex w-72 shrink-0 flex-col gap-3 overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-accent/40"
+      className="panel panel-hover flex w-72 shrink-0 flex-col gap-3 overflow-hidden focus:outline-none focus:ring-2 focus:ring-accent/40"
     >
       <div className={`h-1.5 w-full ${colors.bar}`} />
 
       <div className="flex cursor-pointer flex-col gap-3 px-4 pb-4">
         <div className="flex items-start justify-between gap-2">
-          <h2 className="text-sm font-bold leading-snug text-foreground">{item.title}</h2>
+          <h2 className="font-display text-sm font-bold leading-snug text-foreground">{item.title}</h2>
           <span
             className="shrink-0 text-base"
             role="img"
@@ -58,19 +58,15 @@ export default function RoadmapCard({ item, tasks, onSelect }: RoadmapCardProps)
           </span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          <span className={`rounded-full px-2 py-0.5 font-bold ${colors.soft} ${colors.text}`}>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className={`tag ${colors.soft} ${colors.text}`}>
             {normalizeRoadmapCategory(item.category)}
           </span>
-          {item.owner && (
-            <span className="rounded-full bg-background px-2 py-0.5 font-medium text-muted">
-              {item.owner}
-            </span>
-          )}
+          {item.owner && <span className="tag tag-muted">{item.owner}</span>}
         </div>
 
         {(item.startDate || item.endDate) && (
-          <div className="text-xs text-muted">
+          <div className="font-mono text-xs text-muted">
             {item.startDate ? formatDate(item.startDate) : "—"}
             {" – "}
             {item.endDate ? formatDate(item.endDate) : "—"}
@@ -79,7 +75,7 @@ export default function RoadmapCard({ item, tasks, onSelect }: RoadmapCardProps)
 
         {total > 0 && (
           <div className="space-y-1">
-            <div className="text-xs text-muted">
+            <div className="font-mono text-xs text-muted">
               {done}/{total} משימות הושלמו
             </div>
             <div className="h-1 w-full overflow-hidden rounded-full bg-border">

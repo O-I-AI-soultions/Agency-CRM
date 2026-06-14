@@ -48,20 +48,19 @@ export default function TasksBoard({ tasks: initialTasks, partner, records }: Ta
   return (
     <>
       <div className="flex justify-end">
-        <button
-          type="button"
-          onClick={() => setIsCreating(true)}
-          className="rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong focus:outline-none focus:ring-2 focus:ring-accent/40"
-        >
+        <button type="button" onClick={() => setIsCreating(true)} className="btn-primary">
           + משימה חדשה
         </button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="flex flex-col gap-3 rounded-2xl border border-border bg-surface/60 p-3">
-          <h2 className="px-1 text-sm font-bold text-foreground">המשימות שלי ({partner})</h2>
+        <div className="panel flex flex-col gap-3 p-3">
+          <h2 className="flex items-center gap-2 px-1 text-sm font-display font-semibold text-foreground">
+            <span className="h-2 w-2 rounded-full bg-accent" aria-hidden />
+            המשימות שלי ({partner})
+          </h2>
           {myTasks.length === 0 ? (
-            <p className="rounded-xl border border-dashed border-border px-3 py-6 text-center text-sm text-muted">
+            <p className="rounded-lg border border-dashed border-border px-3 py-6 text-center text-sm text-muted">
               אין משימות
             </p>
           ) : (
@@ -69,10 +68,13 @@ export default function TasksBoard({ tasks: initialTasks, partner, records }: Ta
           )}
         </div>
 
-        <div className="flex flex-col gap-3 rounded-2xl border border-border bg-surface/60 p-3">
-          <h2 className="px-1 text-sm font-bold text-foreground">המשימות של {otherPartner}</h2>
+        <div className="panel flex flex-col gap-3 p-3">
+          <h2 className="flex items-center gap-2 px-1 text-sm font-display font-semibold text-foreground">
+            <span className="h-2 w-2 rounded-full bg-muted-2" aria-hidden />
+            המשימות של {otherPartner}
+          </h2>
           {otherTasks.length === 0 ? (
-            <p className="rounded-xl border border-dashed border-border px-3 py-6 text-center text-sm text-muted">
+            <p className="rounded-lg border border-dashed border-border px-3 py-6 text-center text-sm text-muted">
               אין משימות
             </p>
           ) : (

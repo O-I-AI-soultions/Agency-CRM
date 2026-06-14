@@ -290,7 +290,7 @@ export default function RoadmapDrawer({
       <div
         role="dialog"
         aria-modal="true"
-        className={`fixed inset-y-0 right-0 z-50 w-full max-w-md overflow-y-auto bg-surface shadow-xl transition-transform duration-300 ${
+        className={`fixed inset-y-0 right-0 z-50 w-full max-w-md overflow-y-auto border-s border-border bg-surface shadow-xl transition-transform duration-300 ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -306,7 +306,7 @@ export default function RoadmapDrawer({
             </button>
 
             <div className="border-b border-border p-4 pl-14">
-              <h2 className="text-xl font-black leading-snug text-foreground">
+              <h2 className="font-display text-xl font-black leading-snug text-foreground">
                 {isNew ? "יעד חדש" : "יעד במפת הדרכים"}
               </h2>
             </div>
@@ -336,7 +336,7 @@ export default function RoadmapDrawer({
               </label>
 
               <label className="flex items-center justify-between text-sm">
-                <span className="text-muted">סטטוס</span>
+                <span className="text-xs font-bold uppercase tracking-wide text-muted">סטטוס</span>
                 <select
                   value={status ?? ""}
                   onChange={(e) => handleStatusChange(e.target.value)}
@@ -351,7 +351,7 @@ export default function RoadmapDrawer({
               </label>
 
               <label className="flex items-center justify-between text-sm">
-                <span className="text-muted">קטגוריה</span>
+                <span className="text-xs font-bold uppercase tracking-wide text-muted">קטגוריה</span>
                 <select
                   value={category ?? ""}
                   onChange={(e) => handleCategoryChange(e.target.value)}
@@ -366,7 +366,7 @@ export default function RoadmapDrawer({
               </label>
 
               <label className="flex items-center justify-between text-sm">
-                <span className="text-muted">אחראי</span>
+                <span className="text-xs font-bold uppercase tracking-wide text-muted">אחראי</span>
                 <select
                   value={owner}
                   onChange={(e) => handleOwnerChange(e.target.value as RoadmapOwner | "")}
@@ -382,7 +382,7 @@ export default function RoadmapDrawer({
               </label>
 
               <label className="flex items-center justify-between text-sm">
-                <span className="text-muted">צבע</span>
+                <span className="text-xs font-bold uppercase tracking-wide text-muted">צבע</span>
                 <div className="flex gap-2">
                   {ROADMAP_COLORS.map((c) => (
                     <button
@@ -392,8 +392,8 @@ export default function RoadmapDrawer({
                       aria-label={COLOR_LABELS_HE[c]}
                       title={COLOR_LABELS_HE[c]}
                       aria-pressed={color === c}
-                      className={`h-8 w-8 shrink-0 rounded-full focus:outline-none focus:ring-2 focus:ring-accent/40 ${roadmapColorClasses(c).bar} ${
-                        color === c ? "ring-2 ring-offset-2 ring-foreground" : ""
+                      className={`h-8 w-8 shrink-0 rounded-md border border-border focus:outline-none focus:ring-2 focus:ring-accent/40 ${roadmapColorClasses(c).bar} ${
+                        color === c ? "ring-2 ring-offset-2 ring-accent" : ""
                       }`}
                     />
                   ))}
@@ -402,21 +402,21 @@ export default function RoadmapDrawer({
 
               <div className="flex items-center justify-between gap-2 text-sm">
                 <label className="flex flex-1 items-center justify-between gap-2">
-                  <span className="text-muted">מתאריך</span>
+                  <span className="text-xs font-bold uppercase tracking-wide text-muted">מתאריך</span>
                   <input
                     type="date"
                     value={startDate}
                     onChange={(e) => handleStartDateChange(e.target.value)}
-                    className="rounded-lg border border-border bg-background px-2 py-1.5 text-base font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
+                    className="rounded-lg border border-border bg-background px-2 py-1.5 text-base font-mono font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
                   />
                 </label>
                 <label className="flex flex-1 items-center justify-between gap-2">
-                  <span className="text-muted">עד תאריך</span>
+                  <span className="text-xs font-bold uppercase tracking-wide text-muted">עד תאריך</span>
                   <input
                     type="date"
                     value={endDate}
                     onChange={(e) => handleEndDateChange(e.target.value)}
-                    className="rounded-lg border border-border bg-background px-2 py-1.5 text-base font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
+                    className="rounded-lg border border-border bg-background px-2 py-1.5 text-base font-mono font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
                   />
                 </label>
               </div>
@@ -426,7 +426,7 @@ export default function RoadmapDrawer({
                   type="button"
                   onClick={handleCreate}
                   disabled={saving || !title.trim()}
-                  className="w-full rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="btn-primary w-full disabled:cursor-not-allowed"
                 >
                   צור יעד
                 </button>
@@ -435,7 +435,7 @@ export default function RoadmapDrawer({
                   {linkedTasks.length > 0 && (
                     <div className="space-y-2">
                       <h3 className="text-xs font-bold uppercase tracking-wide text-muted">
-                        משימות ({doneCount}/{linkedTasks.length})
+                        משימות (<span className="font-mono">{doneCount}/{linkedTasks.length}</span>)
                       </h3>
                       <div className="space-y-2">
                         {linkedTasks.map((task) => {
@@ -472,7 +472,7 @@ export default function RoadmapDrawer({
                                     type="button"
                                     onClick={() => toggleExpanded(task.id)}
                                     aria-expanded={expanded}
-                                    className="flex shrink-0 items-center gap-1 rounded-full bg-surface px-2 py-1 text-xs font-bold text-muted transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
+                                    className="flex shrink-0 items-center gap-1 rounded-md border border-border bg-surface px-2 py-1 font-mono text-xs font-bold text-muted transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
                                   >
                                     {subtaskDone}/{subtasks.length}
                                     {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -495,7 +495,7 @@ export default function RoadmapDrawer({
                                   type="date"
                                   value={toDateInput(task.dueDate)}
                                   onChange={(e) => handleTaskDueDateChange(task, e.target.value)}
-                                  className="rounded-md border border-border bg-surface px-1.5 py-1 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
+                                  className="rounded-md border border-border bg-surface px-1.5 py-1 font-mono text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
                                 />
                               </div>
 
@@ -567,11 +567,7 @@ export default function RoadmapDrawer({
                     </div>
                   )}
 
-                  <button
-                    type="button"
-                    onClick={handleDelete}
-                    className="w-full rounded-full bg-warn-soft px-4 py-2 text-sm font-bold text-warn transition-colors hover:bg-warn hover:text-white focus:outline-none focus:ring-2 focus:ring-warn/40"
-                  >
+                  <button type="button" onClick={handleDelete} className="btn-danger w-full">
                     מחק יעד
                   </button>
                 </>

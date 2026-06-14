@@ -227,7 +227,7 @@ export default function TaskDrawer({
       <div
         role="dialog"
         aria-modal="true"
-        className={`fixed inset-y-0 right-0 z-50 w-full max-w-md overflow-y-auto bg-surface shadow-xl transition-transform duration-300 ${
+        className={`fixed inset-y-0 right-0 z-50 w-full max-w-md overflow-y-auto border-s border-border bg-surface shadow-xl transition-transform duration-300 ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -243,7 +243,7 @@ export default function TaskDrawer({
             </button>
 
             <div className="border-b border-border p-4 pl-14">
-              <h2 className="text-xl font-black leading-snug text-foreground">
+              <h2 className="font-display text-xl font-black leading-snug text-foreground">
                 {isNew ? "משימה חדשה" : "משימה"}
               </h2>
               {!isNew && !isOwn && (
@@ -267,7 +267,7 @@ export default function TaskDrawer({
               </label>
 
               <label className="flex items-center justify-between text-sm">
-                <span className="text-muted">סטטוס</span>
+                <span className="text-xs font-bold uppercase tracking-wide text-muted">סטטוס</span>
                 <select
                   value={status}
                   onChange={(e) => handleStatusChange(e.target.value as TaskStatus)}
@@ -283,7 +283,7 @@ export default function TaskDrawer({
               </label>
 
               <label className="flex items-center justify-between text-sm">
-                <span className="text-muted">עדיפות</span>
+                <span className="text-xs font-bold uppercase tracking-wide text-muted">עדיפות</span>
                 <select
                   value={priority ?? ""}
                   onChange={(e) =>
@@ -302,13 +302,13 @@ export default function TaskDrawer({
               </label>
 
               <label className="flex items-center justify-between text-sm">
-                <span className="text-muted">תאריך יעד</span>
+                <span className="text-xs font-bold uppercase tracking-wide text-muted">תאריך יעד</span>
                 <input
                   type="date"
                   value={dueDate}
                   onChange={(e) => handleDueDateChange(e.target.value)}
                   disabled={fieldDisabled}
-                  className="rounded-lg border border-border bg-background px-2 py-1.5 text-base font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-lg border border-border bg-background px-2 py-1.5 text-base font-mono font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </label>
 
@@ -327,7 +327,7 @@ export default function TaskDrawer({
                   type="button"
                   onClick={handleCreate}
                   disabled={saving || !title.trim()}
-                  className="w-full rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="btn-primary w-full disabled:cursor-not-allowed"
                 >
                   צור משימה
                 </button>
@@ -336,11 +336,7 @@ export default function TaskDrawer({
                   <CommentThread comments={comments} onSend={handleSendComment} />
 
                   {isOwn && (
-                    <button
-                      type="button"
-                      onClick={handleDelete}
-                      className="w-full rounded-full bg-warn-soft px-4 py-2 text-sm font-bold text-warn transition-colors hover:bg-warn hover:text-white focus:outline-none focus:ring-2 focus:ring-warn/40"
-                    >
+                    <button type="button" onClick={handleDelete} className="btn-danger w-full">
                       מחק משימה
                     </button>
                   )}

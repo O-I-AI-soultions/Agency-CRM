@@ -80,16 +80,16 @@ export default function RoadmapTimeline({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex gap-1 rounded-full bg-background p-1">
+          <div className="flex flex-wrap gap-1.5">
             <button
               type="button"
               onClick={() => setCategoryFilter(null)}
               aria-pressed={categoryFilter === null}
-              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-accent/40 ${
+              className={
                 categoryFilter === null
-                  ? "bg-surface text-foreground shadow-sm"
-                  : "text-muted hover:text-foreground"
-              }`}
+                  ? "rounded-lg border border-accent bg-accent px-3 py-1.5 text-xs font-semibold text-accent-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-accent/40"
+                  : "btn-outline rounded-lg px-3 py-1.5 text-xs font-semibold"
+              }
             >
               הכל
             </button>
@@ -99,27 +99,27 @@ export default function RoadmapTimeline({
                 type="button"
                 onClick={() => setCategoryFilter(c)}
                 aria-pressed={categoryFilter === c}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-accent/40 ${
+                className={
                   categoryFilter === c
-                    ? "bg-surface text-foreground shadow-sm"
-                    : "text-muted hover:text-foreground"
-                }`}
+                    ? "rounded-lg border border-accent bg-accent px-3 py-1.5 text-xs font-semibold text-accent-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-accent/40"
+                    : "btn-outline rounded-lg px-3 py-1.5 text-xs font-semibold"
+                }
               >
                 {c}
               </button>
             ))}
           </div>
 
-          <div className="flex gap-1 rounded-full bg-background p-1">
+          <div className="flex flex-wrap gap-1.5">
             <button
               type="button"
               onClick={() => setStatusFilter(null)}
               aria-pressed={statusFilter === null}
-              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-accent/40 ${
+              className={
                 statusFilter === null
-                  ? "bg-surface text-foreground shadow-sm"
-                  : "text-muted hover:text-foreground"
-              }`}
+                  ? "rounded-lg border border-accent bg-accent px-3 py-1.5 text-xs font-semibold text-accent-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-accent/40"
+                  : "btn-outline rounded-lg px-3 py-1.5 text-xs font-semibold"
+              }
             >
               הכל
             </button>
@@ -129,11 +129,11 @@ export default function RoadmapTimeline({
                 type="button"
                 onClick={() => setStatusFilter(tone)}
                 aria-pressed={statusFilter === tone}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-accent/40 ${
+                className={
                   statusFilter === tone
-                    ? "bg-surface text-foreground shadow-sm"
-                    : "text-muted hover:text-foreground"
-                }`}
+                    ? "rounded-lg border border-accent bg-accent px-3 py-1.5 text-xs font-semibold text-accent-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-accent/40"
+                    : "btn-outline rounded-lg px-3 py-1.5 text-xs font-semibold"
+                }
               >
                 {STATUS_TONE_LABELS[tone]}
               </button>
@@ -141,18 +141,14 @@ export default function RoadmapTimeline({
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsCreating(true)}
-          className="flex items-center gap-1 rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong focus:outline-none focus:ring-2 focus:ring-accent/40"
-        >
+        <button type="button" onClick={() => setIsCreating(true)} className="btn-primary">
           <Plus size={16} /> יעד חדש
         </button>
       </div>
 
       <div className="kanban-scroll flex gap-4 overflow-x-auto pb-2">
         {filtered.length === 0 ? (
-          <p className="w-full rounded-xl border border-dashed border-border px-3 py-6 text-center text-sm text-muted">
+          <p className="w-full rounded-lg border border-dashed border-border px-3 py-6 text-center text-sm text-muted">
             אין יעדים התואמים את הסינון
           </p>
         ) : (
