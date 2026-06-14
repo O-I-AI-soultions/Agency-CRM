@@ -36,7 +36,7 @@ export default function RecentContactsCard({ leads }: RecentContactsCardProps) {
       className="card-shadow animate-fade-up rounded-2xl bg-surface p-5"
       style={{ animationDelay: "0.2s" }}
     >
-      <h3 className="text-[13px] font-semibold text-muted">אנשי קשר אחרונים</h3>
+      <h2 className="text-[13px] font-semibold text-muted">אנשי קשר אחרונים</h2>
 
       <div className="mt-3 space-y-3">
         {recent.length === 0 && <p className="text-xs text-muted-2">אין עדיין לידים</p>}

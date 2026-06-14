@@ -14,16 +14,18 @@
   --color-border: #e5e8f0;
 
   --color-accent: #3b82f6;
-  --color-accent-strong: #2563eb;
+  --color-accent-strong: #1d4ed8;
   --color-accent-soft: #dbeafe;
 
   --color-green: #10b981;
   --color-green-soft: #d1fae5;
 
   --color-warn: #ef4444;
+  --color-warn-strong: #b91c1c;
   --color-warn-soft: #fee2e2;
 
   --color-amber: #f59e0b;
+  --color-amber-strong: #b45309;
   --color-amber-soft: #fef3c7;
 
   --color-sky: #0d9488;

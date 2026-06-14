@@ -47,8 +47,13 @@ export default function RoadmapCard({ item, tasks, onSelect }: RoadmapCardProps)
 
       <div className="flex cursor-pointer flex-col gap-3 px-4 pb-4">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="text-sm font-bold leading-snug text-foreground">{item.title}</h3>
-          <span className="shrink-0 text-base" title={STATUS_TONE_LABELS[tone]}>
+          <h2 className="text-sm font-bold leading-snug text-foreground">{item.title}</h2>
+          <span
+            className="shrink-0 text-base"
+            role="img"
+            aria-label={STATUS_TONE_LABELS[tone]}
+            title={STATUS_TONE_LABELS[tone]}
+          >
             {STATUS_TONE_DOT[tone]}
           </span>
         </div>

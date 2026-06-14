@@ -11,8 +11,8 @@ const PRIORITY_LABELS: Record<Priority, string> = {
 };
 
 const PRIORITY_CLASSES: Record<Priority, string> = {
-  High: "bg-warn-soft text-warn",
-  Medium: "bg-amber-soft text-amber",
+  High: "bg-warn-soft text-warn-strong",
+  Medium: "bg-amber-soft text-amber-strong",
   Low: "bg-sky-soft text-sky",
 };
 
@@ -62,7 +62,7 @@ export default function OpenTasksCard({ tasks: initialTasks }: OpenTasksCardProp
       style={{ animationDelay: "0.3s" }}
     >
       <div className="flex items-center justify-between">
-        <h3 className="text-[13px] font-semibold text-muted">משימות פתוחות</h3>
+        <h2 className="text-[13px] font-semibold text-muted">משימות פתוחות</h2>
         <CheckSquare size={16} className="text-muted-2" />
       </div>
 
@@ -75,15 +75,17 @@ export default function OpenTasksCard({ tasks: initialTasks }: OpenTasksCardProp
             <div key={task.id} className="flex items-start gap-2.5">
               <button
                 type="button"
-                aria-label="סמן כהושלם"
+                aria-label={`סמן את המשימה "${task.title}" כהושלמה`}
                 onClick={() => handleComplete(task.id)}
-                className="mt-0.5 h-4 w-4 shrink-0 rounded-full border-2 border-border transition-colors hover:border-accent hover:bg-accent-soft"
-              />
+                className="group -mt-2.5 -ms-2.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-accent-soft focus:outline-none focus:ring-2 focus:ring-accent/40"
+              >
+                <span className="h-4 w-4 rounded-full border-2 border-border transition-colors group-hover:border-accent" />
+              </button>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm text-foreground">{task.title}</p>
                 <div className="mt-1 flex items-center gap-2">
                   {task.dueDate && (
-                    <span className={`text-[11px] ${overdue ? "font-bold text-warn" : "text-muted-2"}`}>
+                    <span className={`text-[11px] ${overdue ? "font-bold text-warn-strong" : "text-muted-2"}`}>
                       {formatDate(task.dueDate)}
                     </span>
                   )}

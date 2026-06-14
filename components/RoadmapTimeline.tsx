@@ -84,7 +84,8 @@ export default function RoadmapTimeline({
             <button
               type="button"
               onClick={() => setCategoryFilter(null)}
-              className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+              aria-pressed={categoryFilter === null}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-accent/40 ${
                 categoryFilter === null
                   ? "bg-surface text-foreground shadow-sm"
                   : "text-muted hover:text-foreground"
@@ -97,7 +98,8 @@ export default function RoadmapTimeline({
                 key={c}
                 type="button"
                 onClick={() => setCategoryFilter(c)}
-                className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                aria-pressed={categoryFilter === c}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-accent/40 ${
                   categoryFilter === c
                     ? "bg-surface text-foreground shadow-sm"
                     : "text-muted hover:text-foreground"
@@ -112,7 +114,8 @@ export default function RoadmapTimeline({
             <button
               type="button"
               onClick={() => setStatusFilter(null)}
-              className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+              aria-pressed={statusFilter === null}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-accent/40 ${
                 statusFilter === null
                   ? "bg-surface text-foreground shadow-sm"
                   : "text-muted hover:text-foreground"
@@ -125,7 +128,8 @@ export default function RoadmapTimeline({
                 key={tone}
                 type="button"
                 onClick={() => setStatusFilter(tone)}
-                className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                aria-pressed={statusFilter === tone}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-accent/40 ${
                   statusFilter === tone
                     ? "bg-surface text-foreground shadow-sm"
                     : "text-muted hover:text-foreground"
@@ -140,21 +144,27 @@ export default function RoadmapTimeline({
         <button
           type="button"
           onClick={() => setIsCreating(true)}
-          className="flex items-center gap-1 rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong"
+          className="flex items-center gap-1 rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong focus:outline-none focus:ring-2 focus:ring-accent/40"
         >
           <Plus size={16} /> יעד חדש
         </button>
       </div>
 
       <div className="kanban-scroll flex gap-4 overflow-x-auto pb-2">
-        {filtered.map((item) => (
-          <RoadmapCard
-            key={item.id}
-            item={item}
-            tasks={tasks.filter((t) => item.taskIds.includes(t.id))}
-            onSelect={setSelected}
-          />
-        ))}
+        {filtered.length === 0 ? (
+          <p className="w-full rounded-xl border border-dashed border-border px-3 py-6 text-center text-sm text-muted">
+            אין יעדים התואמים את הסינון
+          </p>
+        ) : (
+          filtered.map((item) => (
+            <RoadmapCard
+              key={item.id}
+              item={item}
+              tasks={tasks.filter((t) => item.taskIds.includes(t.id))}
+              onSelect={setSelected}
+            />
+          ))
+        )}
       </div>
 
       <RoadmapDrawer

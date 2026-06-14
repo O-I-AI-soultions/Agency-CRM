@@ -37,8 +37,17 @@ export default async function RootLayout({
       <body className="min-h-full bg-background text-foreground">
         {partner ? (
           <>
+            <a
+              href="#main-content"
+              className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:right-2 focus:z-[60] focus:rounded-lg focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-white focus:outline-none focus:ring-2 focus:ring-accent/40"
+            >
+              דלג לתוכן הראשי
+            </a>
             <Sidebar partner={partner} />
-            <main className="min-h-screen px-4 py-8 pt-20 sm:px-6 md:py-8 md:pr-8 md:pl-[17rem] lg:pl-[18rem]">
+            <main
+              id="main-content"
+              className="min-h-screen px-4 py-8 pt-20 sm:px-6 md:py-8 md:pr-8 md:pl-[17rem] lg:pl-[18rem]"
+            >
               <div className="mx-auto max-w-7xl">{children}</div>
             </main>
           </>

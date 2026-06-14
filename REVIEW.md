@@ -208,6 +208,96 @@ No additional unaddressed mobile/responsive issues were found during this pass.
 
 ---
 
+# Pass 2 — Deeper UI/UX/A11y/Mobile Audit (follow-up)
+
+Follow-up pass covering all remaining pages/components, split into two parallel sub-passes by file ownership.
+
+## Pass 2A — Dashboard / Leads / Clients
+
+Scope: `app/page.tsx`, `app/leads/page.tsx`, `app/clients/page.tsx`, `components/CallListTable.tsx`, `components/ClientsTable.tsx`, `components/LeadCard.tsx`, `components/LeadDrawer.tsx`, `components/LeadsTabs.tsx`, `components/FilterBar.tsx`, `components/PriorityBadge.tsx`, `components/StatusToggle.tsx`, `components/StatusActionButtons.tsx`, `components/LinkedRecordSearch.tsx`, `components/CommentThread.tsx`, `components/dashboard/*`.
+
+| File | Issue | Severity | Status |
+|---|---|---|---|
+| `components/CallListTable.tsx` | Table `<th>` cells had no `scope="col"` — screen readers can't associate header/data cells | medium | fixed |
+| `components/ClientsTable.tsx` | Same — `<th>` cells missing `scope="col"` | medium | fixed |
+| `components/StatusToggle.tsx` | Error message used raw Tailwind color `text-red-600` instead of semantic `text-warn` token | medium | fixed |
+| `components/StatusToggle.tsx` | Error message not announced to screen readers | medium | fixed (added `role="alert"`) |
+| `components/StatusToggle.tsx` | Toggle button had no visible focus ring | critical | fixed (`focus:ring-2 focus:ring-accent/40`) |
+| `components/StatusActionButtons.tsx` | Error message used raw `text-red-600` instead of `text-warn` | medium | fixed |
+| `components/StatusActionButtons.tsx` | Error message not announced to screen readers | medium | fixed (added `role="alert"`) |
+| `components/StatusActionButtons.tsx` | All three status-action buttons had no visible focus ring | critical | fixed (`focus:ring-2`) |
+| `components/LeadDrawer.tsx` | Status / "next action" `<select>` elements had no focus ring | critical | fixed |
+| `components/LeadDrawer.tsx` | Status/next-action selects and notes textarea used `text-sm` (14px) → iOS zoom-on-focus | high | fixed (`text-base`) |
+| `components/LeadDrawer.tsx` | Convert-to-client modal: ₪ amount inputs used `text-sm` (14px) → iOS zoom risk | high | fixed (`text-base`) |
+| `components/LeadDrawer.tsx` | Copy bug: field showing `lastContacted` was labeled "נוצר לאחרונה ב" (lit. "last created at"), confusing next to "תאריך יצירה" | medium | fixed → "יצירת קשר אחרונה" |
+| `components/LeadDrawer.tsx` | Save/update toast not announced to assistive tech | medium | fixed (`role="status" aria-live="polite"`) |
+| `components/LeadDrawer.tsx` | Drawer and convert-modal `role="dialog"` had no accessible name | high | fixed (`aria-labelledby`) |
+| `components/LeadDrawer.tsx` | Close button and quick-action pills had no visible focus ring | critical | fixed |
+| `components/LeadDrawer.tsx` | Save/confirm buttons showed only `opacity-50` while saving, no text feedback | medium | fixed (button text → "שומר...") |
+| `components/LeadDrawer.tsx` | Convert modal Cancel/Confirm buttons had no focus ring | critical | fixed |
+| `components/LeadDrawer.tsx` | Convert modal field rows could overflow on narrow screens (long label next to fixed-width input) | medium | fixed (`min-w-0` / `shrink-0`) |
+| `components/FilterBar.tsx` | Search/city/niche inputs and selects used `text-sm` (14px) → iOS zoom-on-focus | high | fixed (`text-base`) |
+| `components/FilterBar.tsx` | Filter controls had no `aria-label` | high | fixed |
+| `components/FilterBar.tsx` | "נקה" (clear filters) button had no focus ring | critical | fixed |
+| `components/CommentThread.tsx` | Comment input used `text-sm` (iOS zoom) and had no `aria-label` | high | fixed |
+| `components/CommentThread.tsx` | "שלח" send button had no focus ring | critical | fixed |
+| `components/LinkedRecordSearch.tsx` | Search input `text-sm` (iOS zoom); no ARIA combobox semantics | high | fixed (`role="combobox"`/`listbox`/`option` wiring) |
+| `components/LinkedRecordSearch.tsx` | "הסר קישור" remove button was 14px, far below touch target minimum, no focus ring | critical | fixed (32×32px + focus ring) |
+| `components/dashboard/OpenTasksCard.tsx` | "Mark task complete" button was 16×16px, far below touch target minimum | critical | fixed (36×36px hit area via negative margin, visual dot unchanged) |
+| `components/dashboard/OpenTasksCard.tsx`, `RecentContactsCard.tsx`, `SalesPerformanceCard.tsx` | `<h3>` used with no `<h2>` ancestor — heading hierarchy skip | medium | fixed (`<h3>`→`<h2>`) |
+| `components/dashboard/TopHeader.tsx` | Header search input `text-sm` + no `aria-label` | high | fixed |
+| `components/dashboard/TopHeader.tsx` | Notifications bell and "חדש" link had no focus ring | critical | fixed |
+| `components/LeadsTabs.tsx` | Tab links had no focus ring and `py-1.5` (~32px) touch target | critical/medium | fixed (focus ring + `py-2`) |
+
+## Pass 2B — Tasks / Roadmap / Auth / Sidebar / Scrape
+
+Scope: `app/tasks/page.tsx`, `app/settings/page.tsx`, `app/login/page.tsx`, `app/layout.tsx`, `components/TaskCard.tsx`, `components/TaskDrawer.tsx`, `components/TasksBoard.tsx`, `components/TasksTabs.tsx`, `components/KanbanBoard.tsx`, `components/KanbanColumn.tsx`, `components/RoadmapCard.tsx`, `components/RoadmapDrawer.tsx`, `components/RoadmapTimeline.tsx`, `components/ChangePasswordForm.tsx`, `components/Sidebar.tsx`, `components/ScrapeForm.tsx`, `components/ScrapeHistory.tsx`.
+
+| File | Issue | Severity | Status |
+|---|---|---|---|
+| `components/TaskCard.tsx` | "Medium" priority badge (`bg-amber-soft text-amber`) contrast ~1.93:1 | critical | fixed |
+| `components/ScrapeForm.tsx` | "Running" scrape status banner same ~1.93:1 contrast failure | critical | fixed (text → `text-foreground`, spinner keeps amber accent) |
+| `components/TaskDrawer.tsx`, `components/RoadmapDrawer.tsx` | Status/priority/category/owner/color/date fields had no visible focus ring | critical | fixed |
+| `components/RoadmapDrawer.tsx` | Color-swatch picker buttons 24px (below 44px target), 6px gap, no focus ring, English-only `aria-label` | high | fixed (32px, 8px gap, focus ring, `aria-pressed`, Hebrew `COLOR_LABELS_HE`) |
+| `components/RoadmapDrawer.tsx` | Subtask row controls had no focus rings and `py-0.5` touch targets | high | fixed |
+| `components/Sidebar.tsx` | No focus-visible styling anywhere; mobile menu had no Escape-to-close | high | fixed (focus rings, `aria-current="page"`, 44×44px menu button, Escape handler) |
+| `app/login/page.tsx` | No password show/hide toggle; error not announced | high | fixed (Eye/EyeOff toggle, `role="alert" aria-live="assertive"`) |
+| `components/ChangePasswordForm.tsx` | No show/hide toggle for 3 password fields; error/success not announced | high | fixed ("הצג סיסמאות" checkbox, `role="alert"`/`role="status"`) |
+| `components/RoadmapTimeline.tsx` | Filter pills/"יעד חדש" had no focus ring, no `aria-pressed`, no empty state | medium | fixed |
+| `components/TasksTabs.tsx` | Tab links had no focus ring / `aria-current` | medium | fixed |
+| `components/TasksBoard.tsx` | "+ משימה חדשה" button had no focus ring | medium | fixed |
+| `components/TaskDrawer.tsx`, `components/RoadmapDrawer.tsx` | Disabled fields used `disabled:opacity-50` only, no `disabled:cursor-not-allowed` | low | fixed |
+| `components/TaskDrawer.tsx`, `components/RoadmapDrawer.tsx` | Drawer close/delete buttons had no focus ring | medium | fixed |
+| `components/RoadmapCard.tsx` | `<h3>` with no `<h2>` ancestor — heading hierarchy skip | medium | fixed (`<h2>`) |
+| `components/RoadmapCard.tsx` | Status emoji dot relied on `title` only, not exposed to screen readers | low | fixed (`role="img"` + `aria-label`) |
+| `components/ScrapeHistory.tsx` | History table `<th>` missing `scope="col"` | low | fixed |
+| `app/layout.tsx` | No skip-link to bypass sidebar nav | low | fixed (`#main-content` skip link) |
+
+## Cross-cutting fixes (applied after both sub-passes, in `app/globals.css` + badge/status components)
+
+Both sub-passes independently flagged the same WCAG AA contrast failures in the shared color tokens (`app/globals.css`), used for priority badges and status text across the whole app:
+
+- `text-amber` on `bg-amber-soft` (Medium priority badge) ≈ **1.93:1**
+- `text-warn` on `bg-warn-soft` (High priority badge) ≈ **3.08:1**
+- `text-accent-strong` on `bg-accent-soft` (Low priority / "Done"/"Completed" badges) ≈ **4.24:1**
+- `text-amber` for Google rating display on white surface ≈ **2.15:1**
+- Active tab text (white on `bg-accent`) ≈ **3.68:1**
+
+**Fix applied** — added two new text tokens for use on `-soft` backgrounds, and darkened one existing token:
+- `app/globals.css`: added `--color-warn-strong: #b91c1c` and `--color-amber-strong: #b45309`; changed `--color-accent-strong` from `#2563eb` to `#1d4ed8` (still blue, now meets 4.5:1 on `accent-soft` and as button hover background).
+- Applied `text-warn-strong` / `text-amber-strong` to all "High"/"Medium" priority badges (`PriorityBadge.tsx`, `CallListTable.tsx`, `TaskCard.tsx`, `dashboard/OpenTasksCard.tsx`) and overdue-date indicators (`TaskCard.tsx`, `dashboard/OpenTasksCard.tsx`).
+- Applied `text-amber-strong` to Google rating displays (`CallListTable.tsx`, `LeadCard.tsx`, `LeadDrawer.tsx`) and `ScrapeHistory.tsx`'s "Running"/"Failed" status text (`text-amber-strong`/`text-warn-strong`).
+- `components/LeadsTabs.tsx`: active tab background changed `bg-accent` → `bg-accent-strong` for sufficient contrast with white text.
+- "Low"/"Completed"/"Done" badges using `text-accent-strong` automatically pass now via the darkened token — no per-file changes needed beyond the ones above.
+
+**Remaining documented-only (need a wider design-system decision)**:
+- `text-muted` on `bg-sky-soft` (inactive tab, ≈4.29:1) and `text-muted` on `bg-border`/`bg-background` (≈3.94/4.47:1) are borderline-under 4.5:1. `text-muted` is a very widely-used secondary-text token; rebalancing it is a global palette change best done as its own pass, not piecemeal.
+- `components/dashboard/TopHeader.tsx`: header search input and notification bell have no handlers — render as live controls but do nothing. Feature/business-logic decision, not a markup fix.
+
+Also applied for consistency: bumped remaining `text-sm` (14px) form inputs/selects in `components/TaskDrawer.tsx` and `components/RoadmapDrawer.tsx` to `text-base` (16px), matching the iOS-zoom fix already applied to Pass 2A's drawers/forms.
+
+---
+
 ## Build / Lint Verification
 
 Run from `C:\Users\itays\Dropbox\איתי\O-I\Agency-CRM`:

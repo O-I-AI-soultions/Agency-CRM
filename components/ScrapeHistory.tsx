@@ -14,9 +14,9 @@ const STATUS_ICONS: Record<string, typeof Loader2> = {
 };
 
 const STATUS_CLASSES: Record<string, string> = {
-  Running: "text-amber",
+  Running: "text-amber-strong",
   Completed: "text-accent-strong",
-  Failed: "text-warn",
+  Failed: "text-warn-strong",
 };
 
 function formatDate(value: string): string {
@@ -46,25 +46,25 @@ export default function ScrapeHistory({ runs }: { runs: ScrapeHistoryRecord[] })
       <table className="w-full text-start">
         <thead>
           <tr className="border-b border-border bg-background/60">
-            <th className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
+            <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
               תאריך
             </th>
-            <th className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
+            <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
               ניישה
             </th>
-            <th className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
+            <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
               עיר
             </th>
-            <th className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
+            <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
               תוצאות
             </th>
-            <th className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
+            <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
               סטטוס
             </th>
-            <th className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
+            <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
               לידים שנוצרו
             </th>
-            <th className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
+            <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
               הופעל על ידי
             </th>
           </tr>

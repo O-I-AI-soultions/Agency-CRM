@@ -19,8 +19,9 @@ export default function TasksTabs({ active }: { active: TasksTab }) {
         <Link
           key={tab.key}
           href={tab.key === "list" ? "/tasks" : `/tasks?tab=${tab.key}`}
+          aria-current={active === tab.key ? "page" : undefined}
           className={
-            "rounded-full px-4 py-1.5 text-sm font-semibold transition-colors " +
+            "rounded-full px-4 py-1.5 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-accent/40 " +
             (active === tab.key
               ? "bg-accent text-white shadow-sm"
               : "text-muted hover:bg-surface hover:text-foreground")

@@ -12,16 +12,16 @@ export default function ClientsTable({ clients }: { clients: ClientRecord[] }) {
       <table className="w-full text-start">
         <thead>
           <tr className="border-b border-border bg-background/60">
-            <th className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
+            <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
               שם לקוח
             </th>
-            <th className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
+            <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
               עלות הקמה
             </th>
-            <th className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
+            <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
               תשלום חודשי
             </th>
-            <th className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
+            <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
               סטטוס
             </th>
           </tr>

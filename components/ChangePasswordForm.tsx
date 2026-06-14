@@ -6,6 +6,7 @@ export default function ChangePasswordForm() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPasswords, setShowPasswords] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -62,7 +63,7 @@ export default function ChangePasswordForm() {
           </label>
           <input
             id="currentPassword"
-            type="password"
+            type={showPasswords ? "text" : "password"}
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             required
@@ -76,7 +77,7 @@ export default function ChangePasswordForm() {
           </label>
           <input
             id="newPassword"
-            type="password"
+            type={showPasswords ? "text" : "password"}
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             required
@@ -90,7 +91,7 @@ export default function ChangePasswordForm() {
           </label>
           <input
             id="confirmPassword"
-            type="password"
+            type={showPasswords ? "text" : "password"}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
@@ -98,14 +99,32 @@ export default function ChangePasswordForm() {
           />
         </div>
 
+        <label className="flex items-center gap-2 text-sm font-medium text-muted">
+          <input
+            type="checkbox"
+            checked={showPasswords}
+            onChange={(e) => setShowPasswords(e.target.checked)}
+            className="h-4 w-4 accent-accent focus:outline-none focus:ring-2 focus:ring-accent/40"
+          />
+          {showPasswords ? "הסתר סיסמאות" : "הצג סיסמאות"}
+        </label>
+
         {error && (
-          <p className="rounded-lg bg-warn-soft px-3 py-2 text-center text-sm font-medium text-warn">
+          <p
+            role="alert"
+            aria-live="assertive"
+            className="rounded-lg bg-warn-soft px-3 py-2 text-center text-sm font-medium text-warn"
+          >
             {error}
           </p>
         )}
 
         {success && (
-          <p className="rounded-lg bg-accent-soft px-3 py-2 text-center text-sm font-medium text-accent">
+          <p
+            role="status"
+            aria-live="polite"
+            className="rounded-lg bg-accent-soft px-3 py-2 text-center text-sm font-medium text-accent"
+          >
             {success}
           </p>
         )}
@@ -113,7 +132,7 @@ export default function ChangePasswordForm() {
         <button
           type="submit"
           disabled={loading}
-          className="mt-2 w-full rounded-xl bg-accent px-4 py-2.5 font-bold text-white transition hover:bg-accent-strong disabled:opacity-60"
+          className="mt-2 w-full rounded-xl bg-accent px-4 py-2.5 font-bold text-white transition hover:bg-accent-strong focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? "משנה..." : "שינוי סיסמה"}
         </button>

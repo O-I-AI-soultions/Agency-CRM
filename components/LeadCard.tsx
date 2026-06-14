@@ -44,7 +44,7 @@ export default function LeadCard({ lead, onSelect, accentColor, index }: LeadCar
           {lead.city && <span>{lead.city}</span>}
           {lead.city && lead.googleRating != null && <span aria-hidden>·</span>}
           {lead.googleRating != null && (
-            <span className="flex items-center gap-1 font-semibold text-amber">
+            <span className="flex items-center gap-1 font-semibold text-amber-strong">
               <Star size={14} className="fill-current" /> {lead.googleRating}
             </span>
           )}

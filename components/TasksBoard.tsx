@@ -51,7 +51,7 @@ export default function TasksBoard({ tasks: initialTasks, partner, records }: Ta
         <button
           type="button"
           onClick={() => setIsCreating(true)}
-          className="rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong"
+          className="rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong focus:outline-none focus:ring-2 focus:ring-accent/40"
         >
           + משימה חדשה
         </button>

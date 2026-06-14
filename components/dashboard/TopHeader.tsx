@@ -22,8 +22,9 @@ export default function TopHeader({ title, subtitle, partner }: TopHeaderProps) 
           <input
             type="text"
             placeholder="חיפוש..."
+            aria-label="חיפוש"
             suppressHydrationWarning
-            className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-2 focus:outline-none"
+            className="w-full bg-transparent text-base text-foreground placeholder:text-muted-2 focus:outline-none"
           />
         </div>
       </div>
@@ -31,7 +32,7 @@ export default function TopHeader({ title, subtitle, partner }: TopHeaderProps) 
       <button
         type="button"
         aria-label="התראות"
-        className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-muted transition-colors hover:bg-background hover:text-foreground"
+        className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-muted transition-colors hover:bg-background hover:text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
       >
         <Bell size={20} />
         <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-warn ring-2 ring-surface" />
@@ -53,7 +54,7 @@ export default function TopHeader({ title, subtitle, partner }: TopHeaderProps) 
 
       <Link
         href="/leads?tab=scrape"
-        className="flex shrink-0 items-center gap-1.5 rounded-[10px] bg-accent px-[18px] py-2 text-sm font-semibold text-white transition-all hover:scale-[1.02] hover:bg-accent-strong"
+        className="flex shrink-0 items-center gap-1.5 rounded-[10px] bg-accent px-[18px] py-2 text-sm font-semibold text-white transition-all hover:scale-[1.02] hover:bg-accent-strong focus:outline-none focus:ring-2 focus:ring-accent/40"
       >
         <Plus size={16} />
         חדש

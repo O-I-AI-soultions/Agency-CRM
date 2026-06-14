@@ -21,9 +21,9 @@ export default function LeadsTabs({ active }: { active: LeadsTab }) {
           key={tab.key}
           href={tab.key === "kanban" ? "/leads" : `/leads?tab=${tab.key}`}
           className={
-            "rounded-full px-4 py-1.5 text-sm font-semibold transition-colors " +
+            "rounded-full px-4 py-2 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 " +
             (active === tab.key
-              ? "bg-accent text-white shadow-sm"
+              ? "bg-accent-strong text-white shadow-sm"
               : "text-muted hover:bg-surface hover:text-foreground")
           }
         >

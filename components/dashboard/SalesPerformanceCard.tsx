@@ -47,7 +47,7 @@ export default function SalesPerformanceCard({ leads, clients }: SalesPerformanc
       style={{ animationDelay: "0.1s" }}
     >
       <div className="flex items-center justify-between">
-        <h3 className="text-[13px] font-semibold text-muted">ביצועי מכירות</h3>
+        <h2 className="text-[13px] font-semibold text-muted">ביצועי מכירות</h2>
         <span className="rounded-full bg-accent-soft px-2.5 py-0.5 text-[11px] font-semibold text-accent-strong">
           החודש
         </span>

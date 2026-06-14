@@ -198,7 +198,7 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
   const showConvert = localLead?.status === "Pitch Sent";
 
   const pillClasses =
-    "flex flex-1 items-center justify-center gap-1.5 rounded-full bg-background px-3 py-2 text-sm font-bold text-foreground transition-colors hover:bg-accent-soft hover:text-accent-strong";
+    "flex flex-1 items-center justify-center gap-1.5 rounded-full bg-background px-3 py-2 text-sm font-bold text-foreground transition-colors hover:bg-accent-soft hover:text-accent-strong focus:outline-none focus:ring-2 focus:ring-accent/40";
 
   return (
     <>
@@ -213,6 +213,7 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
       <div
         role="dialog"
         aria-modal="true"
+        aria-labelledby="lead-drawer-title"
         className={`fixed inset-y-0 right-0 z-50 w-full max-w-md overflow-y-auto bg-surface shadow-xl transition-transform duration-300 ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
@@ -223,26 +224,30 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
               type="button"
               onClick={onClose}
               aria-label="סגור"
-              className="absolute left-4 top-4 flex h-11 w-11 items-center justify-center rounded-full text-muted transition-colors hover:bg-background hover:text-foreground"
+              className="absolute left-4 top-4 flex h-11 w-11 items-center justify-center rounded-full text-muted transition-colors hover:bg-background hover:text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
             >
               <X size={18} />
             </button>
 
             {toast && (
-              <div className="pointer-events-none absolute top-4 right-1/2 z-10 flex translate-x-1/2 items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold text-white shadow-md">
+              <div
+                role="status"
+                aria-live="polite"
+                className="pointer-events-none absolute top-4 right-1/2 z-10 flex translate-x-1/2 items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold text-white shadow-md"
+              >
                 <toast.icon size={14} /> {toast.text}
               </div>
             )}
 
             <div className="border-b border-border p-4 pl-14">
-              <h2 className="text-xl font-black leading-snug text-foreground">
+              <h2 id="lead-drawer-title" className="text-xl font-black leading-snug text-foreground">
                 {localLead.businessName}
               </h2>
               <div className="mt-2 flex items-center gap-2">
                 <PriorityBadge lead={localLead} />
                 {localLead.city && <span className="text-sm text-muted">{localLead.city}</span>}
                 {localLead.googleRating != null && (
-                  <span className="flex items-center gap-1 text-sm font-semibold text-amber">
+                  <span className="flex items-center gap-1 text-sm font-semibold text-amber-strong">
                     <span dir="ltr" className="flex items-center">
                       {renderStars(localLead.googleRating)}
                     </span>
@@ -351,7 +356,7 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                   <select
                     value={statusValue}
                     onChange={(e) => handleStatusChange(e.target.value as KanbanStatus)}
-                    className="rounded-lg border border-border bg-background px-2 py-1 text-sm font-medium text-foreground"
+                    className="rounded-lg border border-border bg-background px-2 py-1 text-base font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
                   >
                     {KANBAN_STATUSES.map((status) => (
                       <option key={status} value={status}>
@@ -365,7 +370,7 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                   <select
                     value={localLead.nextAction ?? ""}
                     onChange={(e) => handleNextActionChange(e.target.value)}
-                    className="rounded-lg border border-border bg-background px-2 py-1 text-sm font-medium text-foreground"
+                    className="rounded-lg border border-border bg-background px-2 py-1 text-base font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
                   >
                     {NEXT_ACTION_OPTIONS.map((option) => (
                       <option key={option.label} value={option.value}>
@@ -381,7 +386,7 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted">נוצר לאחרונה ב</span>
+                  <span className="text-muted">יצירת קשר אחרונה</span>
                   <span className="font-medium text-foreground">
                     {formatDateTime(localLead.lastContacted)}
                   </span>
@@ -401,7 +406,7 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                   onChange={(e) => setNotesValue(e.target.value)}
                   onBlur={handleNotesBlur}
                   placeholder="הוסף הערה..."
-                  className="w-full min-h-[120px] resize-y rounded-xl border border-border bg-background p-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
+                  className="w-full min-h-[120px] resize-y rounded-xl border border-border bg-background p-3 text-base text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
                 />
               </section>
             </div>
@@ -412,9 +417,9 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                   type="button"
                   onClick={handleMarkContacted}
                   disabled={savingFooter}
-                  className="w-full rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong disabled:opacity-50"
+                  className="w-full rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:opacity-50"
                 >
-                  סמן כ&apos;צור קשר&apos;
+                  {savingFooter ? "שומר..." : "סמן כ'צור קשר'"}
                 </button>
               </div>
             )}
@@ -424,7 +429,7 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                 <button
                   type="button"
                   onClick={() => setShowConvertModal(true)}
-                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong"
+                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong focus:outline-none focus:ring-2 focus:ring-accent/40"
                 >
                   <Check size={16} /> המר ללקוח
                 </button>
@@ -439,13 +444,16 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
           <div
             role="dialog"
             aria-modal="true"
+            aria-labelledby="convert-modal-title"
             className="w-full max-w-sm rounded-2xl bg-surface p-5 shadow-xl"
           >
-            <h3 className="mb-4 text-lg font-black text-foreground">המרה ללקוח</h3>
+            <h3 id="convert-modal-title" className="mb-4 text-lg font-black text-foreground">
+              המרה ללקוח
+            </h3>
             <div className="space-y-3">
               <label className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-muted">כמה גביתם על הקמה? (Setup Fee)</span>
-                <span className="flex items-center gap-1">
+                <span className="min-w-0 text-muted">כמה גביתם על הקמה? (Setup Fee)</span>
+                <span className="flex shrink-0 items-center gap-1">
                   <span className="text-muted">₪</span>
                   <input
                     type="number"
@@ -454,13 +462,13 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                     value={setupFee}
                     onChange={(e) => setSetupFee(e.target.value)}
                     placeholder="0"
-                    className="w-24 rounded-lg border border-border bg-background px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
+                    className="w-24 rounded-lg border border-border bg-background px-2 py-1 text-base text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
                   />
                 </span>
               </label>
               <label className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-muted">כמה גביתם בחודש? (Monthly)</span>
-                <span className="flex items-center gap-1">
+                <span className="min-w-0 text-muted">כמה גביתם בחודש? (Monthly)</span>
+                <span className="flex shrink-0 items-center gap-1">
                   <span className="text-muted">₪</span>
                   <input
                     type="number"
@@ -469,7 +477,7 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                     value={monthlyRetainer}
                     onChange={(e) => setMonthlyRetainer(e.target.value)}
                     placeholder="0"
-                    className="w-24 rounded-lg border border-border bg-background px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
+                    className="w-24 rounded-lg border border-border bg-background px-2 py-1 text-base text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
                   />
                 </span>
               </label>
@@ -479,7 +487,7 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                 type="button"
                 onClick={() => setShowConvertModal(false)}
                 disabled={convertSaving}
-                className="rounded-full bg-background px-4 py-2 text-sm font-bold text-foreground transition-colors hover:bg-accent-soft disabled:opacity-50"
+                className="rounded-full bg-background px-4 py-2 text-sm font-bold text-foreground transition-colors hover:bg-accent-soft focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:opacity-50"
               >
                 ביטול
               </button>
@@ -487,9 +495,9 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                 type="button"
                 onClick={handleConvertConfirm}
                 disabled={convertSaving}
-                className="inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:opacity-50"
               >
-                <Check size={16} /> אשר
+                <Check size={16} /> {convertSaving ? "שומר..." : "אשר"}
               </button>
             </div>
           </div>

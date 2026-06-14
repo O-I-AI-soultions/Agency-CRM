@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { PARTNERS, type Partner } from "@/lib/auth";
 
 export default function LoginPage() {
   const [partner, setPartner] = useState<Partner | null>(null);
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -74,6 +76,7 @@ export default function LoginPage() {
                   key={name}
                   type="button"
                   onClick={() => setPartner(name)}
+                  aria-pressed={partner === name}
                   className={
                     "flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold transition focus:outline-none focus:ring-2 focus:ring-accent/20 " +
                     (partner === name
@@ -91,19 +94,34 @@ export default function LoginPage() {
             <label htmlFor="password" className="text-sm font-medium text-foreground">
               סיסמה
             </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoFocus
-              className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-foreground transition focus:border-accent focus:bg-surface focus:outline-none focus:ring-2 focus:ring-accent/20"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoFocus
+                className="w-full rounded-xl border border-border bg-background px-4 py-2.5 pl-11 text-foreground transition focus:border-accent focus:bg-surface focus:outline-none focus:ring-2 focus:ring-accent/20"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}
+                aria-pressed={showPassword}
+                className="absolute inset-y-0 left-0 flex h-11 w-11 items-center justify-center text-muted transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           {error && (
-            <p className="rounded-lg bg-warn-soft px-3 py-2 text-center text-sm font-medium text-warn">
+            <p
+              role="alert"
+              aria-live="assertive"
+              className="rounded-lg bg-warn-soft px-3 py-2 text-center text-sm font-medium text-warn"
+            >
               {error}
             </p>
           )}
@@ -111,7 +129,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 w-full rounded-xl bg-accent px-4 py-2.5 font-bold text-white transition hover:bg-accent-strong disabled:opacity-60"
+            className="mt-2 w-full rounded-xl bg-accent px-4 py-2.5 font-bold text-white transition hover:bg-accent-strong focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? "מתחבר..." : "כניסה"}
           </button>

@@ -20,8 +20,8 @@ const PRIORITY_ICONS: Record<Priority, typeof Flame> = {
 };
 
 const PRIORITY_CLASSES: Record<Priority, string> = {
-  High: "bg-warn-soft text-warn",
-  Medium: "bg-amber-soft text-amber",
+  High: "bg-warn-soft text-warn-strong",
+  Medium: "bg-amber-soft text-amber-strong",
   Low: "bg-sky-soft text-sky",
 };
 
@@ -93,7 +93,7 @@ export default function TaskCard({ task, onSelect }: TaskCardProps) {
           {TASK_STATUS_LABELS[task.status]}
         </span>
         {task.dueDate && (
-          <span className={overdue ? "font-bold text-warn" : "text-muted"}>
+          <span className={overdue ? "font-bold text-warn-strong" : "text-muted"}>
             {formatDate(task.dueDate)}
           </span>
         )}

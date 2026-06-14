@@ -25,7 +25,7 @@ const RATING_OPTIONS = [
 ];
 
 const selectClasses =
-  "rounded-full border border-border bg-surface px-3 py-2 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40";
+  "rounded-full border border-border bg-surface px-3 py-2 text-base font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40";
 
 interface FilterBarProps {
   leads: LeadRecord[];
@@ -54,8 +54,9 @@ export default function FilterBar({
           value={filters.search}
           onChange={(e) => onChange({ ...filters, search: e.target.value })}
           placeholder="חיפוש שם עסק..."
+          aria-label="חיפוש לפי שם עסק"
           suppressHydrationWarning
-          className="min-w-[180px] flex-1 rounded-full border border-border bg-surface px-4 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
+          className="min-w-[180px] flex-1 rounded-full border border-border bg-surface px-4 py-2 text-base text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
         />
         <input
           type="text"
@@ -63,8 +64,9 @@ export default function FilterBar({
           value={filters.city}
           onChange={(e) => onChange({ ...filters, city: e.target.value })}
           placeholder="עיר"
+          aria-label="סינון לפי עיר"
           suppressHydrationWarning
-          className="min-w-[120px] rounded-full border border-border bg-surface px-4 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
+          className="min-w-[120px] rounded-full border border-border bg-surface px-4 py-2 text-base text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
         />
         <datalist id="city-options">
           {cities.map((city) => (
@@ -77,8 +79,9 @@ export default function FilterBar({
           value={filters.niche}
           onChange={(e) => onChange({ ...filters, niche: e.target.value })}
           placeholder="ניישה"
+          aria-label="סינון לפי ניישה"
           suppressHydrationWarning
-          className="min-w-[120px] rounded-full border border-border bg-surface px-4 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
+          className="min-w-[120px] rounded-full border border-border bg-surface px-4 py-2 text-base text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
         />
         <datalist id="niche-options">
           {niches.map((niche) => (
@@ -88,6 +91,7 @@ export default function FilterBar({
         <select
           value={filters.status}
           onChange={(e) => onChange({ ...filters, status: e.target.value })}
+          aria-label="סינון לפי סטטוס"
           suppressHydrationWarning
           className={selectClasses}
         >
@@ -106,6 +110,7 @@ export default function FilterBar({
               minRating: e.target.value ? Number(e.target.value) : null,
             })
           }
+          aria-label="סינון לפי דירוג מינימלי"
           suppressHydrationWarning
           className={selectClasses}
         >
@@ -121,7 +126,7 @@ export default function FilterBar({
             type="button"
             onClick={() => onChange(DEFAULT_FILTERS)}
             suppressHydrationWarning
-            className="inline-flex items-center gap-1 rounded-full border border-warn/30 px-3 py-2 text-sm font-bold text-warn transition-colors hover:bg-warn-soft"
+            className="inline-flex items-center gap-1 rounded-full border border-warn/30 px-3 py-2 text-sm font-bold text-warn transition-colors hover:bg-warn-soft focus:outline-none focus:ring-2 focus:ring-warn/40"
           >
             <X size={14} /> נקה
           </button>

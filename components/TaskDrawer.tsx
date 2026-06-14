@@ -237,7 +237,7 @@ export default function TaskDrawer({
               type="button"
               onClick={onClose}
               aria-label="סגור"
-              className="absolute left-4 top-4 flex h-11 w-11 items-center justify-center rounded-full text-muted transition-colors hover:bg-background hover:text-foreground"
+              className="absolute left-4 top-4 flex h-11 w-11 items-center justify-center rounded-full text-muted transition-colors hover:bg-background hover:text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
             >
               <X size={18} />
             </button>
@@ -262,7 +262,7 @@ export default function TaskDrawer({
                   onBlur={handleTitleBlur}
                   disabled={fieldDisabled}
                   placeholder="מה צריך לעשות?"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:opacity-50"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-base font-medium text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </label>
 
@@ -272,7 +272,7 @@ export default function TaskDrawer({
                   value={status}
                   onChange={(e) => handleStatusChange(e.target.value as TaskStatus)}
                   disabled={fieldDisabled}
-                  className="rounded-lg border border-border bg-background px-2 py-1 text-sm font-medium text-foreground disabled:opacity-50"
+                  className="rounded-lg border border-border bg-background px-2 py-1.5 text-base font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {TASK_STATUSES.map((s) => (
                     <option key={s} value={s}>
@@ -290,7 +290,7 @@ export default function TaskDrawer({
                     handlePriorityChange(e.target.value === "" ? null : (e.target.value as Priority))
                   }
                   disabled={fieldDisabled}
-                  className="rounded-lg border border-border bg-background px-2 py-1 text-sm font-medium text-foreground disabled:opacity-50"
+                  className="rounded-lg border border-border bg-background px-2 py-1.5 text-base font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <option value="">לא נקבע</option>
                   {PRIORITIES.map((p) => (
@@ -308,7 +308,7 @@ export default function TaskDrawer({
                   value={dueDate}
                   onChange={(e) => handleDueDateChange(e.target.value)}
                   disabled={fieldDisabled}
-                  className="rounded-lg border border-border bg-background px-2 py-1 text-sm font-medium text-foreground disabled:opacity-50"
+                  className="rounded-lg border border-border bg-background px-2 py-1.5 text-base font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </label>
 
@@ -327,7 +327,7 @@ export default function TaskDrawer({
                   type="button"
                   onClick={handleCreate}
                   disabled={saving || !title.trim()}
-                  className="w-full rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong disabled:opacity-50"
+                  className="w-full rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   צור משימה
                 </button>
@@ -339,7 +339,7 @@ export default function TaskDrawer({
                     <button
                       type="button"
                       onClick={handleDelete}
-                      className="w-full rounded-full bg-warn-soft px-4 py-2 text-sm font-bold text-warn transition-colors hover:bg-warn hover:text-white"
+                      className="w-full rounded-full bg-warn-soft px-4 py-2 text-sm font-bold text-warn transition-colors hover:bg-warn hover:text-white focus:outline-none focus:ring-2 focus:ring-warn/40"
                     >
                       מחק משימה
                     </button>

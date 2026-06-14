@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, ClipboardList, CheckSquare, Users, Menu, ChevronDown, Settings } from "lucide-react";
@@ -32,13 +32,22 @@ export default function Sidebar({ partner }: SidebarProps) {
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setIsOpen(false);
+    }
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [isOpen]);
+
   return (
     <>
       <button
         type="button"
         onClick={() => setIsOpen(true)}
         aria-label="פתח תפריט"
-        className="card-shadow fixed top-4 left-4 z-30 flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface text-foreground md:hidden"
+        className="card-shadow fixed top-4 left-4 z-30 flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-surface text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40 md:hidden"
       >
         <Menu size={20} />
       </button>
@@ -74,8 +83,9 @@ export default function Sidebar({ partner }: SidebarProps) {
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
+                aria-current={active ? "page" : undefined}
                 className={
-                  "group flex h-12 animate-fade-up items-center gap-3 rounded-[10px] px-4 text-sm font-medium transition-colors " +
+                  "group flex h-12 animate-fade-up items-center gap-3 rounded-[10px] px-4 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-accent/60 " +
                   (active
                     ? "border-l-[3px] border-accent bg-sidebar-active text-white"
                     : "text-white/55 hover:bg-sidebar-active hover:text-white")
@@ -106,7 +116,7 @@ export default function Sidebar({ partner }: SidebarProps) {
           <button
             type="button"
             onClick={handleLogout}
-            className="mt-1 w-full rounded-[10px] px-3 py-2 text-right text-sm font-medium text-white/55 transition-colors hover:bg-white/5 hover:text-warn"
+            className="mt-1 w-full rounded-[10px] px-3 py-2 text-right text-sm font-medium text-white/55 transition-colors hover:bg-white/5 hover:text-warn focus:outline-none focus:ring-2 focus:ring-accent/60"
           >
             התנתק
           </button>

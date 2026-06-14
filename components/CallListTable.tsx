@@ -13,8 +13,8 @@ const PRIORITY_LABELS: Record<Priority, string> = {
 };
 
 const PRIORITY_CLASSES: Record<Priority, string> = {
-  High: "bg-warn-soft text-warn",
-  Medium: "bg-amber-soft text-amber",
+  High: "bg-warn-soft text-warn-strong",
+  Medium: "bg-amber-soft text-amber-strong",
   Low: "bg-accent-soft text-accent-strong",
 };
 
@@ -74,22 +74,22 @@ export default function CallListTable({
       <table className="w-full text-start">
         <thead>
           <tr className="border-b border-border bg-background/60">
-            <th className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
+            <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
               #
             </th>
-            <th className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
+            <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
               עסק
             </th>
-            <th className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
+            <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
               עיר
             </th>
-            <th className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
+            <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
               דירוג
             </th>
-            <th className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
+            <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
               עדיפות
             </th>
-            <th className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
+            <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
               פעולות
             </th>
           </tr>
@@ -100,7 +100,7 @@ export default function CallListTable({
               <td className="px-4 py-3 text-sm tabular-nums text-muted">{index + 1}</td>
               <td className="px-4 py-3 text-sm font-bold text-foreground">{lead.businessName}</td>
               <td className="px-4 py-3 text-sm text-foreground/80">{lead.city ?? "—"}</td>
-              <td className="px-4 py-3 text-sm tabular-nums text-amber">
+              <td className="px-4 py-3 text-sm tabular-nums text-amber-strong">
                 {lead.googleRating != null ? (
                   <span className="inline-flex items-center gap-1">
                     <Star size={12} className="fill-current" /> {lead.googleRating}

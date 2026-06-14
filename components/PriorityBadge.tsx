@@ -9,8 +9,8 @@ const PRIORITY_LABELS: Record<Priority, string> = {
 };
 
 const PRIORITY_CLASSES: Record<Priority, string> = {
-  High: "bg-warn-soft text-warn",
-  Medium: "bg-amber-soft text-amber",
+  High: "bg-warn-soft text-warn-strong",
+  Medium: "bg-amber-soft text-amber-strong",
   Low: "bg-accent-soft text-accent-strong",
 };
 

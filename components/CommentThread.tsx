@@ -56,13 +56,14 @@ export default function CommentThread({ comments, onSend }: CommentThreadProps) 
             if (e.key === "Enter") handleSend();
           }}
           placeholder="כתוב תגובה..."
-          className="flex-1 rounded-full border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
+          aria-label="כתוב תגובה"
+          className="flex-1 rounded-full border border-border bg-background px-3 py-2 text-base text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
         />
         <button
           type="button"
           onClick={handleSend}
           disabled={!text.trim()}
-          className="rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong disabled:opacity-50"
+          className="rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:opacity-50"
         >
           שלח
         </button>
