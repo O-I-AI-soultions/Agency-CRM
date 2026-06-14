@@ -3,13 +3,25 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { KanbanStatus, LeadStatus } from "@/lib/types";
+import { updateLeadStatusClient } from "@/lib/leads-client";
 
 interface StatusActionButtonsProps {
   leadId: string;
   currentStatus: LeadStatus | null;
+  /**
+   * Optional callback invoked immediately (optimistically) when the status
+   * update succeeds, so the parent (e.g. KanbanBoard) can update its local
+   * state without waiting for `router.refresh()`. This is the primary fix
+   * for Bug 1 — cards move to their new column without a full page reload.
+   */
+  onStatusChange?: (status: KanbanStatus) => void;
 }
 
-export default function StatusActionButtons({ leadId, currentStatus }: StatusActionButtonsProps) {
+export default function StatusActionButtons({
+  leadId,
+  currentStatus,
+  onStatusChange,
+}: StatusActionButtonsProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,16 +31,13 @@ export default function StatusActionButtons({ leadId, currentStatus }: StatusAct
     setError(null);
 
     try {
-      const response = await fetch(`/api/leads/${leadId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
+      const ok = await updateLeadStatusClient(leadId, status);
 
-      if (!response.ok) {
+      if (!ok) {
         throw new Error("Request failed");
       }
 
+      onStatusChange?.(status);
       router.refresh();
     } catch {
       setError("שגיאה בעדכון");

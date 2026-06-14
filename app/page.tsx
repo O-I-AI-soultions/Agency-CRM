@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
-import { listClients, listLeads, listTasks } from "@/lib/airtable";
+import { getPartnerNote, listClients, listLeads, listTasks } from "@/lib/airtable";
 import { getCurrentPartner } from "@/lib/auth-server";
-import KanbanBoard from "@/components/KanbanBoard";
+import UrgentLeadsCard from "@/components/dashboard/UrgentLeadsCard";
+import NotesPanel from "@/components/dashboard/NotesPanel";
 import TopHeader from "@/components/dashboard/TopHeader";
 import RightPanel from "@/components/dashboard/RightPanel";
 
@@ -13,14 +14,20 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const [leads, clients, tasks] = await Promise.all([listLeads(), listClients(), listTasks()]);
+  const [leads, clients, tasks, note] = await Promise.all([
+    listLeads(),
+    listClients(),
+    listTasks(),
+    getPartnerNote(partner),
+  ]);
 
   return (
     <div className="space-y-4">
       <TopHeader title="דשבורד" subtitle={`ברוך שובך, ${partner}!`} partner={partner} />
       <div className="flex flex-col gap-4 lg:flex-row">
-        <div className="min-w-0 flex-1 overflow-hidden">
-          <KanbanBoard leads={leads} partner={partner} />
+        <div className="min-w-0 flex-1 space-y-4 overflow-hidden">
+          <UrgentLeadsCard leads={leads} partner={partner} />
+          <NotesPanel initialContent={note?.content ?? ""} />
         </div>
         <RightPanel
           leads={leads}

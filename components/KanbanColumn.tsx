@@ -1,4 +1,4 @@
-import type { LeadRecord } from "@/lib/types";
+import type { KanbanStatus, LeadRecord } from "@/lib/types";
 import LeadCard from "@/components/LeadCard";
 
 export type ColumnAccent = "new" | "review" | "proposal" | "negotiation" | "lost";
@@ -15,10 +15,31 @@ interface KanbanColumnProps {
   title: string;
   leads: LeadRecord[];
   accent: ColumnAccent;
+  /** The `KanbanStatus` this column maps to, or `null` for the "אחר" column
+   * (which is not a valid drag-and-drop target). */
+  status: KanbanStatus | null;
   onSelect: (lead: LeadRecord) => void;
+  onStatusChange: (leadId: string, newStatus: KanbanStatus) => void;
+  draggedLeadId: string | null;
+  dropTargetStatus: KanbanStatus | null;
+  isDropTarget: boolean;
+  onDragStateChange: (leadId: string | null, hoverStatus: KanbanStatus | null) => void;
+  onDrop: (leadId: string, newStatus: KanbanStatus) => void;
 }
 
-export default function KanbanColumn({ title, leads, accent, onSelect }: KanbanColumnProps) {
+export default function KanbanColumn({
+  title,
+  leads,
+  accent,
+  status,
+  onSelect,
+  onStatusChange,
+  draggedLeadId,
+  dropTargetStatus,
+  isDropTarget,
+  onDragStateChange,
+  onDrop,
+}: KanbanColumnProps) {
   const color = ACCENT_COLORS[accent];
 
   return (
@@ -33,14 +54,32 @@ export default function KanbanColumn({ title, leads, accent, onSelect }: KanbanC
         </span>
       </div>
 
-      <div className="flex min-h-[200px] flex-col gap-2 rounded-b-xl border border-t-0 border-border bg-black/[0.02] p-2.5">
+      <div
+        data-column-status={status ?? "other"}
+        className={`kanban-column-dropzone flex min-h-[200px] flex-col gap-2 rounded-b-xl border border-t-0 p-2.5 transition-colors ${
+          isDropTarget
+            ? "border-accent bg-accent-soft"
+            : "border-border bg-black/[0.02]"
+        }`}
+      >
         {leads.length === 0 ? (
           <p className="rounded-xl border border-dashed border-border px-3 py-6 text-center text-sm text-muted">
             אין לידים
           </p>
         ) : (
           leads.map((lead, index) => (
-            <LeadCard key={lead.id} lead={lead} onSelect={onSelect} accentColor={color} index={index} />
+            <LeadCard
+              key={lead.id}
+              lead={lead}
+              onSelect={onSelect}
+              onStatusChange={onStatusChange}
+              accentColor={color}
+              index={index}
+              isDragging={draggedLeadId === lead.id}
+              dropTargetStatus={dropTargetStatus}
+              onDragStateChange={onDragStateChange}
+              onDrop={onDrop}
+            />
           ))
         )}
       </div>

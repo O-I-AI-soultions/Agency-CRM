@@ -23,7 +23,7 @@ export async function POST(
       return Response.json({ error: "Missing businessName" }, { status: 400 });
     }
 
-    await convertLeadToClient(id, {
+    const result = await convertLeadToClient(id, {
       businessName,
       setupFee: typeof setupFee === "number" ? setupFee : 0,
       monthlyRetainer: typeof monthlyRetainer === "number" ? monthlyRetainer : 0,
@@ -32,8 +32,21 @@ export async function POST(
     revalidatePath("/leads");
     revalidatePath("/clients");
 
-    return Response.json({ ok: true });
+    if (!result.leadStatusUpdated) {
+      return Response.json(
+        {
+          error: "Failed to update lead status in Airtable",
+          clientCreated: result.clientCreated,
+        },
+        { status: 502 }
+      );
+    }
+
+    return Response.json({ ok: true, clientCreated: true });
   } catch {
-    return Response.json({ error: "Failed to convert lead" }, { status: 500 });
+    return Response.json(
+      { error: "Failed to convert lead", clientCreated: false },
+      { status: 500 }
+    );
   }
 }

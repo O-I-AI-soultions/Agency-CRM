@@ -10,6 +10,7 @@ import {
   type ClientStatus,
   type KanbanStatus,
   type LeadRecord,
+  type NoteRecord,
   type Priority,
   type RoadmapColor,
   type RoadmapOwner,
@@ -45,6 +46,7 @@ export const TASK_COMMENTS_TABLE = "Task Comments";
 export const ROADMAP_TABLE = "Roadmap";
 export const ROADMAP_TASKS_TABLE = "Roadmap Tasks";
 export const PARTNERS_TABLE = "Partners";
+export const NOTES_TABLE = "Notes";
 
 function mapLeadRecord(record: Airtable.Record<Airtable.FieldSet>): LeadRecord {
   const fields = record.fields;
@@ -203,10 +205,17 @@ export async function countLeadTrackerRecords(): Promise<number> {
   return records.length;
 }
 
+export interface ConvertLeadResult {
+  clientCreated: boolean;
+  leadStatusUpdated: boolean;
+}
+
 export async function convertLeadToClient(
   leadId: string,
   details: { businessName: string; setupFee: number; monthlyRetainer: number }
-): Promise<void> {
+): Promise<ConvertLeadResult> {
+  // Create the client record first. If this fails, the whole operation
+  // throws and nothing has changed.
   await base(CLIENTS_TABLE).create({
     "Client Name": details.businessName,
     "Setup Fee": details.setupFee,
@@ -214,9 +223,21 @@ export async function convertLeadToClient(
     Status: "Active",
   });
 
-  await base(LEAD_TRACKER_TABLE).update(leadId, {
-    Status: "Converted",
-  });
+  // The client record was created successfully at this point. Updating the
+  // Lead Tracker "Status" field to "Converted" can fail independently (e.g.
+  // if the Airtable "Status" single-select doesn't have a "Converted" option
+  // configured yet) — catch that separately so a partial success (client
+  // created, lead status not updated) doesn't get reported as a total
+  // failure to the caller.
+  try {
+    await base(LEAD_TRACKER_TABLE).update(leadId, {
+      Status: "Converted",
+    });
+    return { clientCreated: true, leadStatusUpdated: true };
+  } catch (err) {
+    console.error("convertLeadToClient: failed to update lead status to Converted", err);
+    return { clientCreated: true, leadStatusUpdated: false };
+  }
 }
 
 function mapTaskRecord(
@@ -699,4 +720,48 @@ export async function setPartnerPasswordHash(partner: Partner, hash: string): Pr
   }
 
   await base(PARTNERS_TABLE).create({ Name: partner, PasswordHash: hash });
+}
+
+function mapNoteRecord(record: Airtable.Record<Airtable.FieldSet>): NoteRecord {
+  const fields = record.fields;
+
+  return {
+    id: record.id,
+    partner: (fields["Partner"] as Partner) ?? "איתי",
+    content: (fields["Content"] as string) ?? "",
+    updatedAt: (fields["Updated At"] as string) ?? record._rawJson.createdTime,
+  };
+}
+
+export async function getPartnerNote(partner: Partner): Promise<NoteRecord | null> {
+  const records = await base(NOTES_TABLE)
+    .select({ filterByFormula: `{Partner} = "${escapeFormulaValue(partner)}"`, maxRecords: 1 })
+    .all();
+
+  const record = records[0];
+  return record ? mapNoteRecord(record) : null;
+}
+
+export async function upsertPartnerNote(partner: Partner, content: string): Promise<NoteRecord> {
+  const records = await base(NOTES_TABLE)
+    .select({ filterByFormula: `{Partner} = "${escapeFormulaValue(partner)}"`, maxRecords: 1 })
+    .all();
+
+  const updatedAt = new Date().toISOString();
+  const record = records[0];
+
+  if (record) {
+    const updated = await base(NOTES_TABLE).update(record.id, {
+      Content: content,
+      "Updated At": updatedAt,
+    });
+    return mapNoteRecord(updated);
+  }
+
+  const created = await base(NOTES_TABLE).create({
+    Partner: partner,
+    Content: content,
+    "Updated At": updatedAt,
+  });
+  return mapNoteRecord(created);
 }

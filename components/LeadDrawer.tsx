@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Phone, MessageCircle, MapPin, Star, Check, PartyPopper } from "lucide-react";
+import { X, Phone, MessageCircle, MapPin, Star, Check, PartyPopper, AlertTriangle } from "lucide-react";
 import { KANBAN_STATUSES, type KanbanStatus, type LeadRecord } from "@/lib/types";
 import type { Partner } from "@/lib/auth";
 import PriorityBadge from "@/components/PriorityBadge";
@@ -54,7 +54,7 @@ interface LeadDrawerProps {
   onUpdate: (updated: LeadRecord) => void;
 }
 
-type ToastContent = { icon: typeof Check; text: string };
+type ToastContent = { icon: typeof Check; text: string; variant?: "success" | "error" };
 
 export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDrawerProps) {
   const [localLead, setLocalLead] = useState<LeadRecord | null>(lead);
@@ -89,7 +89,7 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
 
   function showToast(toast: ToastContent) {
     setToast(toast);
-    setTimeout(() => setToast(null), 2000);
+    setTimeout(() => setToast(null), toast.variant === "error" ? 3000 : 2000);
   }
 
   async function patchLead(body: Record<string, unknown>): Promise<boolean> {
@@ -176,7 +176,15 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
           monthlyRetainer: monthlyRetainer === "" ? 0 : Number(monthlyRetainer),
         }),
       });
-      if (!res.ok) return;
+
+      if (!res.ok) {
+        showToast({
+          icon: AlertTriangle,
+          text: "שגיאה בהמרת הליד ללקוח, נסה שוב",
+          variant: "error",
+        });
+        return;
+      }
 
       const updated: LeadRecord = { ...localLead, status: "Converted" };
       setLocalLead(updated);
@@ -184,6 +192,12 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
       onUpdate(updated);
       showToast({ icon: PartyPopper, text: "לקוח חדש נוצר!" });
       setTimeout(() => onClose(), 600);
+    } catch {
+      showToast({
+        icon: AlertTriangle,
+        text: "שגיאה בהמרת הליד ללקוח, נסה שוב",
+        variant: "error",
+      });
     } finally {
       setConvertSaving(false);
     }
@@ -233,7 +247,9 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
               <div
                 role="status"
                 aria-live="polite"
-                className="pointer-events-none absolute top-4 right-1/2 z-10 flex translate-x-1/2 items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold text-white shadow-md"
+                className={`pointer-events-none absolute top-4 right-1/2 z-10 flex translate-x-1/2 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold text-white shadow-md ${
+                  toast.variant === "error" ? "bg-warn" : "bg-accent"
+                }`}
               >
                 <toast.icon size={14} /> {toast.text}
               </div>

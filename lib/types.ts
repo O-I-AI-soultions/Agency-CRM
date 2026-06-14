@@ -9,6 +9,12 @@ export const KANBAN_STATUSES = [
 
 export type KanbanStatus = (typeof KANBAN_STATUSES)[number];
 
+// "New" and "Qualified" are legacy/unused status values kept for backward
+// compatibility with old records — they are never written by `lib/airtable.ts`
+// (only the `KANBAN_STATUSES` values, `null`, and `"Converted"` are), but
+// `StatusActionButtons` still checks for them defensively so old records
+// render the correct action buttons. Do not remove without auditing
+// `StatusActionButtons.tsx`.
 export type LeadStatus = KanbanStatus | "New" | "Qualified" | "Converted";
 
 export const PRIORITIES = ["High", "Medium", "Low"] as const;
@@ -118,6 +124,13 @@ export interface RoadmapRecord {
   color: RoadmapColor | null;
   taskIds: string[];
   createdTime: string;
+}
+
+export interface NoteRecord {
+  id: string;
+  partner: Partner;
+  content: string;
+  updatedAt: string;
 }
 
 export interface RoadmapTaskRecord {

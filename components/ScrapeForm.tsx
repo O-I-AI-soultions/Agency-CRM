@@ -6,6 +6,12 @@ import { Search, Loader2, CheckCircle2, XCircle } from "lucide-react";
 
 type ScrapeStatus = "idle" | "running" | "succeeded" | "failed";
 
+// Bug 3 fix: bound how long/how many times we poll the status endpoint so
+// the UI never gets stuck on "הסריקה פועלת..." forever.
+const POLL_INTERVAL_MS = 5000;
+const MAX_CONSECUTIVE_POLL_FAILURES = 5;
+const MAX_TOTAL_POLL_DURATION_MS = 5 * 60 * 1000; // 5 minutes safety timeout
+
 export default function ScrapeForm() {
   const router = useRouter();
   const [niche, setNiche] = useState("");
@@ -16,10 +22,12 @@ export default function ScrapeForm() {
   const [leadsFound, setLeadsFound] = useState<number | null>(null);
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const safetyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
+      if (safetyTimeoutRef.current) clearTimeout(safetyTimeoutRef.current);
     };
   }, []);
 
@@ -28,7 +36,27 @@ export default function ScrapeForm() {
       clearInterval(pollRef.current);
       pollRef.current = null;
     }
+    if (safetyTimeoutRef.current) {
+      clearTimeout(safetyTimeoutRef.current);
+      safetyTimeoutRef.current = null;
+    }
   };
+
+  async function markRunFailed(historyRecordId: string, message: string) {
+    stopPolling();
+    setError(message);
+    setStatus("failed");
+    try {
+      await fetch("/api/scrape/complete", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ historyRecordId, failed: true }),
+      });
+    } catch {
+      // best-effort — the UI already reflects the failure
+    }
+    router.refresh();
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -56,10 +84,33 @@ export default function ScrapeForm() {
 
       const { runId, historyRecordId, leadCountBefore } = await startRes.json();
 
+      let consecutiveFailures = 0;
+
+      // Top-level safety timeout: regardless of poll outcomes, stop polling
+      // and mark the run as failed after MAX_TOTAL_POLL_DURATION_MS so the
+      // UI never gets stuck indefinitely.
+      safetyTimeoutRef.current = setTimeout(() => {
+        markRunFailed(
+          historyRecordId,
+          "הסריקה לוקחת יותר זמן מהצפוי. ייתכן שהסריקה עדיין רצה ברקע ב-Apify."
+        );
+      }, MAX_TOTAL_POLL_DURATION_MS);
+
       pollRef.current = setInterval(async () => {
         try {
           const statusRes = await fetch(`/api/scrape/status?runId=${runId}`);
-          if (!statusRes.ok) return;
+          if (!statusRes.ok) {
+            consecutiveFailures += 1;
+            if (consecutiveFailures >= MAX_CONSECUTIVE_POLL_FAILURES) {
+              await markRunFailed(
+                historyRecordId,
+                "לא ניתן היה לבדוק את סטטוס הסריקה. ייתכן שהסריקה עדיין רצה ברקע ב-Apify."
+              );
+            }
+            return;
+          }
+
+          consecutiveFailures = 0;
 
           const { status: runStatus } = await statusRes.json();
 
@@ -82,10 +133,11 @@ export default function ScrapeForm() {
                 setStatus("succeeded");
                 router.refresh();
               } catch {
-                setStatus("failed");
+                await markRunFailed(historyRecordId, "הסריקה נכשלה. נסה שוב.");
               }
             }, 10000);
           } else {
+            setError("הסריקה נכשלה. נסה שוב.");
             setStatus("failed");
             await fetch("/api/scrape/complete", {
               method: "PATCH",
@@ -95,9 +147,15 @@ export default function ScrapeForm() {
             router.refresh();
           }
         } catch {
-          // keep polling on transient errors
+          consecutiveFailures += 1;
+          if (consecutiveFailures >= MAX_CONSECUTIVE_POLL_FAILURES) {
+            await markRunFailed(
+              historyRecordId,
+              "לא ניתן היה לבדוק את סטטוס הסריקה. ייתכן שהסריקה עדיין רצה ברקע ב-Apify."
+            );
+          }
         }
-      }, 5000);
+      }, POLL_INTERVAL_MS);
     } catch {
       setStatus("failed");
     }
@@ -218,7 +276,7 @@ export default function ScrapeForm() {
           aria-live="assertive"
           className="mt-4 flex flex-wrap items-center gap-1.5 rounded-xl border border-warn/30 bg-warn-soft px-4 py-3 text-sm font-semibold text-warn"
         >
-          <XCircle size={16} /> הסריקה נכשלה. נסה שוב.
+          <XCircle size={16} /> {error ?? "הסריקה נכשלה. נסה שוב."}
           <button
             type="button"
             onClick={resetForm}
