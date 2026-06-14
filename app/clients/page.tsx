@@ -20,7 +20,7 @@ export default async function ClientsPage() {
         <p className="mt-1 text-sm text-muted">מעקב לקוחות פעילים, עלות הקמה ותשלום חודשי</p>
       </div>
       {clients.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border bg-surface/60 px-6 py-12 text-center">
+        <div className="rounded-lg border border-dashed border-border px-6 py-12 text-center">
           <p className="text-sm text-muted">אין עדיין לקוחות פעילים.</p>
         </div>
       ) : (

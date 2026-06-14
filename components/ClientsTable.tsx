@@ -8,10 +8,10 @@ function formatCurrency(value: number | null): string {
 
 export default function ClientsTable({ clients }: { clients: ClientRecord[] }) {
   return (
-    <div className="overflow-x-auto rounded-2xl border border-border bg-surface shadow-sm">
+    <div className="panel overflow-x-auto">
       <table className="w-full text-start">
         <thead>
-          <tr className="border-b border-border bg-background/60">
+          <tr className="border-b border-border">
             <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
               שם לקוח
             </th>
@@ -28,14 +28,14 @@ export default function ClientsTable({ clients }: { clients: ClientRecord[] }) {
         </thead>
         <tbody className="divide-y divide-border">
           {clients.map((client) => (
-            <tr key={client.id} className="transition-colors hover:bg-background/60">
+            <tr key={client.id} className="transition-colors hover:bg-surface-2">
               <td className="px-4 py-3 text-sm font-bold text-foreground">
                 {client.clientName}
               </td>
-              <td className="px-4 py-3 text-sm tabular-nums text-foreground/80">
+              <td className="px-4 py-3 text-sm font-mono tabular-nums text-foreground/80">
                 {formatCurrency(client.setupFee)}
               </td>
-              <td className="px-4 py-3 text-sm tabular-nums text-foreground/80">
+              <td className="px-4 py-3 text-sm font-mono tabular-nums text-foreground/80">
                 {formatCurrency(client.monthlyRetainer)}
               </td>
               <td className="px-4 py-3 text-sm">

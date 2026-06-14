@@ -55,7 +55,7 @@ export default function ChangePasswordForm() {
   }
 
   return (
-    <div className="max-w-sm rounded-2xl border border-border bg-surface p-6 shadow-xl shadow-black/5">
+    <div className="panel max-w-sm p-6">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
           <label htmlFor="currentPassword" className="text-sm font-medium text-foreground">
@@ -67,7 +67,7 @@ export default function ChangePasswordForm() {
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             required
-            className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-foreground transition focus:border-accent focus:bg-surface focus:outline-none focus:ring-2 focus:ring-accent/20"
+            className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           />
         </div>
 
@@ -81,7 +81,7 @@ export default function ChangePasswordForm() {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             required
-            className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-foreground transition focus:border-accent focus:bg-surface focus:outline-none focus:ring-2 focus:ring-accent/20"
+            className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           />
         </div>
 
@@ -95,7 +95,7 @@ export default function ChangePasswordForm() {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
-            className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-foreground transition focus:border-accent focus:bg-surface focus:outline-none focus:ring-2 focus:ring-accent/20"
+            className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           />
         </div>
 
@@ -113,7 +113,7 @@ export default function ChangePasswordForm() {
           <p
             role="alert"
             aria-live="assertive"
-            className="rounded-lg bg-warn-soft px-3 py-2 text-center text-sm font-medium text-warn"
+            className="rounded-lg border border-warn/30 bg-warn-soft px-3 py-2 text-center text-sm font-medium text-warn"
           >
             {error}
           </p>
@@ -123,7 +123,7 @@ export default function ChangePasswordForm() {
           <p
             role="status"
             aria-live="polite"
-            className="rounded-lg bg-accent-soft px-3 py-2 text-center text-sm font-medium text-accent"
+            className="rounded-lg border border-accent/30 bg-accent-soft px-3 py-2 text-center text-sm font-medium text-accent"
           >
             {success}
           </p>
@@ -132,7 +132,7 @@ export default function ChangePasswordForm() {
         <button
           type="submit"
           disabled={loading}
-          className="mt-2 w-full rounded-xl bg-accent px-4 py-2.5 font-bold text-white transition hover:bg-accent-strong focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:cursor-not-allowed disabled:opacity-60"
+          className="btn-primary mt-2 w-full"
         >
           {loading ? "משנה..." : "שינוי סיסמה"}
         </button>

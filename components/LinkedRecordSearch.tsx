@@ -23,7 +23,7 @@ export default function LinkedRecordSearch({
   if (value) {
     const ValueIcon = value.type === "lead" ? ClipboardList : Users;
     return (
-      <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm">
+      <div className="flex items-center justify-between gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm">
         <span className="inline-flex items-center gap-1 font-medium text-foreground">
           <ValueIcon size={14} /> {value.name}
         </span>
@@ -32,7 +32,7 @@ export default function LinkedRecordSearch({
             type="button"
             onClick={() => onChange(null)}
             aria-label="הסר קישור"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted transition-colors hover:bg-warn-soft hover:text-warn focus:outline-none focus:ring-2 focus:ring-warn/40"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:bg-warn-soft hover:text-warn focus:outline-none focus:ring-2 focus:ring-warn/40"
           >
             <X size={14} />
           </button>
@@ -67,7 +67,7 @@ export default function LinkedRecordSearch({
         <ul
           id="linked-record-options"
           role="listbox"
-          className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-border bg-surface shadow-md"
+          className="panel absolute z-10 mt-1 max-h-48 w-full overflow-y-auto"
         >
           {filtered.map((r) => {
             const RecordIcon = r.type === "lead" ? ClipboardList : Users;
@@ -80,7 +80,7 @@ export default function LinkedRecordSearch({
                     setQuery("");
                     setOpen(false);
                   }}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-right text-sm text-foreground transition-colors hover:bg-background focus:outline-none focus:ring-2 focus:ring-accent/40"
+                  className="flex w-full items-center gap-2 px-3 py-2 text-right text-sm text-foreground transition-colors hover:bg-surface-2 focus:outline-none focus:ring-2 focus:ring-accent/40"
                 >
                   <RecordIcon size={14} /> {r.name}
                 </button>

@@ -13,9 +13,9 @@ const PRIORITY_LABELS: Record<Priority, string> = {
 };
 
 const PRIORITY_CLASSES: Record<Priority, string> = {
-  High: "bg-warn-soft text-warn-strong",
-  Medium: "bg-amber-soft text-amber-strong",
-  Low: "bg-accent-soft text-accent-strong",
+  High: "tag-warn",
+  Medium: "tag-amber",
+  Low: "tag-accent",
 };
 
 const PRIORITY_ICONS: Record<Priority, typeof Flame> = {
@@ -70,10 +70,10 @@ export default function CallListTable({
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-border bg-surface shadow-sm">
+    <div className="panel overflow-x-auto">
       <table className="w-full text-start">
         <thead>
-          <tr className="border-b border-border bg-background/60">
+          <tr className="border-b border-border">
             <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
               #
             </th>
@@ -96,11 +96,11 @@ export default function CallListTable({
         </thead>
         <tbody className="divide-y divide-border">
           {visibleItems.map(({ lead, level }, index) => (
-            <tr key={lead.id} className="transition-colors hover:bg-background/60">
-              <td className="px-4 py-3 text-sm tabular-nums text-muted">{index + 1}</td>
+            <tr key={lead.id} className="transition-colors hover:bg-surface-2">
+              <td className="px-4 py-3 text-sm font-mono tabular-nums text-muted">{index + 1}</td>
               <td className="px-4 py-3 text-sm font-bold text-foreground">{lead.businessName}</td>
               <td className="px-4 py-3 text-sm text-foreground/80">{lead.city ?? "—"}</td>
-              <td className="px-4 py-3 text-sm tabular-nums text-amber-strong">
+              <td className="px-4 py-3 text-sm font-mono tabular-nums text-amber-strong">
                 {lead.googleRating != null ? (
                   <span className="inline-flex items-center gap-1">
                     <Star size={12} className="fill-current" /> {lead.googleRating}
@@ -110,9 +110,7 @@ export default function CallListTable({
                 )}
               </td>
               <td className="px-4 py-3 text-sm">
-                <span
-                  className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${PRIORITY_CLASSES[level]}`}
-                >
+                <span className={`tag ${PRIORITY_CLASSES[level]}`}>
                   <PriorityIcon level={level} /> {PRIORITY_LABELS[level]}
                 </span>
               </td>
@@ -121,7 +119,7 @@ export default function CallListTable({
                   {lead.phoneNumber && (
                     <a
                       href={`tel:${lead.phoneNumber}`}
-                      className="inline-flex items-center gap-1 rounded-full border border-accent/30 px-3 py-2 text-xs font-bold text-accent transition-colors hover:bg-accent-soft"
+                      className="btn-outline"
                     >
                       <Phone size={12} /> חייג
                     </a>
@@ -131,7 +129,7 @@ export default function CallListTable({
                       href={`https://wa.me/${toWhatsAppNumber(lead.phoneNumber)}?text=${buildWhatsAppMessage(partner)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 rounded-full border border-accent/30 px-3 py-2 text-xs font-bold text-accent transition-colors hover:bg-accent-soft"
+                      className="btn-outline"
                     >
                       <MessageCircle size={12} /> וואטסאפ
                     </a>
@@ -140,7 +138,7 @@ export default function CallListTable({
                     type="button"
                     disabled={loadingIds.has(lead.id)}
                     onClick={() => markContacted(lead.id)}
-                    className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-accent-strong disabled:opacity-50"
+                    className="btn-primary"
                   >
                     <Check size={12} /> סומן כ&apos;צור קשר&apos;
                   </button>
