@@ -189,7 +189,7 @@ export default function LeadCard({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
-      className={`card-shadow card-shadow-hover animate-fade-up cursor-pointer space-y-2 rounded-b-xl rounded-t-sm border border-t-2 border-border bg-surface p-3 focus:outline-none focus:ring-2 focus:ring-accent/40 ${
+      className={`panel panel-hover animate-fade-up cursor-pointer space-y-2 border-t-2 p-3 focus:outline-none focus:ring-2 focus:ring-accent/40 ${
         dragging ? "shadow-2xl" : ""
       }`}
       style={{ ...style, touchAction: dragging ? "none" : "pan-x" }}
@@ -204,8 +204,8 @@ export default function LeadCard({
           {lead.city && <span>{lead.city}</span>}
           {lead.city && lead.googleRating != null && <span aria-hidden>·</span>}
           {lead.googleRating != null && (
-            <span className="flex items-center gap-1 font-semibold text-amber-strong">
-              <Star size={14} className="fill-current" /> {lead.googleRating}
+            <span className="flex items-center gap-1 font-semibold text-amber">
+              <Star size={14} className="fill-current" /> <span className="font-mono">{lead.googleRating}</span>
             </span>
           )}
         </div>
@@ -221,11 +221,11 @@ export default function LeadCard({
           {lead.phoneNumber && (
             <a
               href={`tel:${lead.phoneNumber}`}
-              className="flex items-center gap-1 rounded-full bg-background px-2 py-2 text-xs font-medium text-foreground transition-colors hover:bg-accent-soft hover:text-accent-strong"
+              className="flex items-center gap-1 rounded-md border border-border bg-surface-2 px-2 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-accent hover:text-accent"
               title="טלפון"
             >
-              <Phone size={16} />
-              <span dir="ltr">{lead.phoneNumber}</span>
+              <Phone size={14} />
+              <span dir="ltr" className="font-mono">{lead.phoneNumber}</span>
             </a>
           )}
 
@@ -234,11 +234,11 @@ export default function LeadCard({
               href={lead.websiteUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 rounded-full bg-background px-2 py-2 text-xs font-medium text-foreground transition-colors hover:bg-accent-soft hover:text-accent-strong"
+              className="flex items-center gap-1 rounded-md border border-border bg-surface-2 px-2 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-accent hover:text-accent"
               title="אתר"
             >
-              <Globe size={16} />
-              <span dir="ltr">{getHostname(lead.websiteUrl)}</span>
+              <Globe size={14} />
+              <span dir="ltr" className="font-mono">{getHostname(lead.websiteUrl)}</span>
             </a>
           )}
 
@@ -247,10 +247,10 @@ export default function LeadCard({
               href={lead.googleMapsLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 rounded-full bg-background px-2 py-2 text-xs font-medium text-foreground transition-colors hover:bg-accent-soft hover:text-accent-strong"
+              className="flex items-center gap-1 rounded-md border border-border bg-surface-2 px-2 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-accent hover:text-accent"
               title="מפה"
             >
-              <MapPin size={16} />
+              <MapPin size={14} />
               מפה
             </a>
           )}

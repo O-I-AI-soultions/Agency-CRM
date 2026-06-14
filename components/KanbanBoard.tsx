@@ -194,7 +194,7 @@ export default function KanbanBoard({ leads: initialLeads, partner }: KanbanBoar
         <div
           role="alert"
           aria-live="assertive"
-          className="mt-3 flex items-center gap-1.5 rounded-xl border border-warn/30 bg-warn-soft px-4 py-2.5 text-sm font-semibold text-warn"
+          className="mt-3 flex items-center gap-1.5 rounded-lg border border-warn/30 bg-warn-soft px-4 py-2.5 text-sm font-semibold text-warn"
         >
           <AlertTriangle size={16} /> {dragError}
         </div>

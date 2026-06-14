@@ -25,7 +25,7 @@ const RATING_OPTIONS = [
 ];
 
 const selectClasses =
-  "rounded-full border border-border bg-surface px-3 py-2 text-base font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40";
+  "rounded-lg border border-border bg-surface px-3 py-2 text-base font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40";
 
 interface FilterBarProps {
   leads: LeadRecord[];
@@ -48,7 +48,7 @@ export default function FilterBar({
 
   return (
     <div className="space-y-2">
-      <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-sky-soft p-3">
+      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-surface p-3">
         <input
           type="text"
           value={filters.search}
@@ -56,7 +56,7 @@ export default function FilterBar({
           placeholder="חיפוש שם עסק..."
           aria-label="חיפוש לפי שם עסק"
           suppressHydrationWarning
-          className="min-w-[180px] flex-1 rounded-full border border-border bg-surface px-4 py-2 text-base text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
+          className="min-w-[180px] flex-1 rounded-lg border border-border bg-background px-4 py-2 text-base text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
         />
         <input
           type="text"
@@ -66,7 +66,7 @@ export default function FilterBar({
           placeholder="עיר"
           aria-label="סינון לפי עיר"
           suppressHydrationWarning
-          className="min-w-[120px] rounded-full border border-border bg-surface px-4 py-2 text-base text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
+          className="min-w-[120px] rounded-lg border border-border bg-background px-4 py-2 text-base text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
         />
         <datalist id="city-options">
           {cities.map((city) => (
@@ -81,7 +81,7 @@ export default function FilterBar({
           placeholder="ניישה"
           aria-label="סינון לפי ניישה"
           suppressHydrationWarning
-          className="min-w-[120px] rounded-full border border-border bg-surface px-4 py-2 text-base text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
+          className="min-w-[120px] rounded-lg border border-border bg-background px-4 py-2 text-base text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
         />
         <datalist id="niche-options">
           {niches.map((niche) => (
@@ -126,14 +126,14 @@ export default function FilterBar({
             type="button"
             onClick={() => onChange(DEFAULT_FILTERS)}
             suppressHydrationWarning
-            className="inline-flex items-center gap-1 rounded-full border border-warn/30 px-3 py-2 text-sm font-bold text-warn transition-colors hover:bg-warn-soft focus:outline-none focus:ring-2 focus:ring-warn/40"
+            className="inline-flex items-center gap-1 rounded-lg border border-warn/30 px-3 py-2 text-sm font-bold text-warn transition-colors hover:bg-warn-soft focus:outline-none focus:ring-2 focus:ring-warn/40"
           >
             <X size={14} /> נקה
           </button>
         )}
       </div>
       <p className="text-sm text-muted">
-        מציג {visibleCount} מתוך {totalCount} לידים
+        מציג <span className="font-mono">{visibleCount}</span> מתוך <span className="font-mono">{totalCount}</span> לידים
       </p>
     </div>
   );

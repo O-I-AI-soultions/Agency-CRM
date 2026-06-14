@@ -13,10 +13,10 @@ const STATUS_ICONS: Record<string, typeof Loader2> = {
   Failed: XCircle,
 };
 
-const STATUS_CLASSES: Record<string, string> = {
-  Running: "text-amber-strong",
-  Completed: "text-accent-strong",
-  Failed: "text-warn-strong",
+const STATUS_TAG_CLASSES: Record<string, string> = {
+  Running: "tag tag-amber",
+  Completed: "tag tag-green",
+  Failed: "tag tag-warn",
 };
 
 function formatDate(value: string): string {
@@ -35,17 +35,17 @@ function formatDate(value: string): string {
 export default function ScrapeHistory({ runs }: { runs: ScrapeHistoryRecord[] }) {
   if (runs.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-border bg-surface/60 px-6 py-12 text-center">
+      <div className="panel border-dashed px-6 py-12 text-center">
         <p className="text-sm text-muted">עדיין לא בוצעו סריקות.</p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-border bg-surface shadow-sm">
+    <div className="panel overflow-x-auto">
       <table className="w-full text-start">
         <thead>
-          <tr className="border-b border-border bg-background/60">
+          <tr className="border-b border-border bg-surface-2">
             <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
               תאריך
             </th>
@@ -71,18 +71,16 @@ export default function ScrapeHistory({ runs }: { runs: ScrapeHistoryRecord[] })
         </thead>
         <tbody className="divide-y divide-border">
           {runs.map((run) => (
-            <tr key={run.id} className="transition-colors hover:bg-background/60">
-              <td className="px-4 py-3 text-sm tabular-nums text-foreground/80">
+            <tr key={run.id} className="transition-colors hover:bg-surface-2">
+              <td className="px-4 py-3 text-sm font-mono tabular-nums text-foreground/80">
                 {formatDate(run.date)}
               </td>
               <td className="px-4 py-3 text-sm font-bold text-foreground">{run.niche}</td>
               <td className="px-4 py-3 text-sm text-foreground/80">{run.city}</td>
-              <td className="px-4 py-3 text-sm tabular-nums text-foreground/80">{run.limit}</td>
+              <td className="px-4 py-3 text-sm font-mono tabular-nums text-foreground/80">{run.limit}</td>
               <td className="px-4 py-3 text-sm">
                 {run.status ? (
-                  <span
-                    className={`inline-flex items-center gap-1 font-semibold ${STATUS_CLASSES[run.status] ?? ""}`}
-                  >
+                  <span className={STATUS_TAG_CLASSES[run.status] ?? "tag tag-muted"}>
                     {STATUS_ICONS[run.status] &&
                       (() => {
                         const Icon = STATUS_ICONS[run.status];
@@ -94,7 +92,7 @@ export default function ScrapeHistory({ runs }: { runs: ScrapeHistoryRecord[] })
                   "—"
                 )}
               </td>
-              <td className="px-4 py-3 text-sm tabular-nums font-bold text-accent-strong">
+              <td className="px-4 py-3 text-sm font-mono tabular-nums font-bold text-accent-strong">
                 {run.leadsFound}
               </td>
               <td className="px-4 py-3 text-sm text-foreground/80">{run.triggeredBy}</td>

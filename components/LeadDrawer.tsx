@@ -212,7 +212,7 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
   const showConvert = localLead?.status === "Pitch Sent";
 
   const pillClasses =
-    "flex flex-1 items-center justify-center gap-1.5 rounded-full bg-background px-3 py-2 text-sm font-bold text-foreground transition-colors hover:bg-accent-soft hover:text-accent-strong focus:outline-none focus:ring-2 focus:ring-accent/40";
+    "flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm font-bold text-foreground transition-colors hover:border-accent hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent/40";
 
   return (
     <>
@@ -228,7 +228,7 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
         role="dialog"
         aria-modal="true"
         aria-labelledby="lead-drawer-title"
-        className={`fixed inset-y-0 right-0 z-50 w-full max-w-md overflow-y-auto bg-surface shadow-xl transition-transform duration-300 ${
+        className={`fixed inset-y-0 right-0 z-50 w-full max-w-md overflow-y-auto border-s border-border bg-surface shadow-xl transition-transform duration-300 ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -247,8 +247,10 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
               <div
                 role="status"
                 aria-live="polite"
-                className={`pointer-events-none absolute top-4 right-1/2 z-10 flex translate-x-1/2 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold text-white shadow-md ${
-                  toast.variant === "error" ? "bg-warn" : "bg-accent"
+                className={`pointer-events-none absolute top-4 right-1/2 z-10 flex translate-x-1/2 items-center gap-1.5 rounded-md border px-3 py-1 text-xs font-bold shadow-md ${
+                  toast.variant === "error"
+                    ? "border-warn/30 bg-warn-soft text-warn"
+                    : "border-accent/30 bg-accent-soft text-accent"
                 }`}
               >
                 <toast.icon size={14} /> {toast.text}
@@ -263,11 +265,11 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                 <PriorityBadge lead={localLead} />
                 {localLead.city && <span className="text-sm text-muted">{localLead.city}</span>}
                 {localLead.googleRating != null && (
-                  <span className="flex items-center gap-1 text-sm font-semibold text-amber-strong">
+                  <span className="flex items-center gap-1 text-sm font-semibold text-amber">
                     <span dir="ltr" className="flex items-center">
                       {renderStars(localLead.googleRating)}
                     </span>
-                    {localLead.googleRating}
+                    <span className="font-mono">{localLead.googleRating}</span>
                   </span>
                 )}
               </div>
@@ -326,7 +328,7 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                 {localLead.phoneNumber && (
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted">טלפון</span>
-                    <span dir="ltr" className="font-medium text-foreground">
+                    <span dir="ltr" className="font-mono font-medium text-foreground">
                       {localLead.phoneNumber}
                     </span>
                   </div>
@@ -334,7 +336,7 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted">אימייל</span>
                   {localLead.email ? (
-                    <span dir="ltr" className="font-medium text-foreground">
+                    <span dir="ltr" className="font-mono font-medium text-foreground">
                       {localLead.email}
                     </span>
                   ) : (
@@ -397,19 +399,19 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                 </label>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted">תאריך יצירה</span>
-                  <span className="font-medium text-foreground">
+                  <span className="font-mono font-medium text-foreground">
                     {formatDate(localLead.createdTime)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted">יצירת קשר אחרונה</span>
-                  <span className="font-medium text-foreground">
+                  <span className="font-mono font-medium text-foreground">
                     {formatDateTime(localLead.lastContacted)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted">מספר מעקבים</span>
-                  <span className="font-medium text-foreground">
+                  <span className="font-mono font-medium text-foreground">
                     {localLead.followUpCount ?? 0}
                   </span>
                 </div>
@@ -422,7 +424,7 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                   onChange={(e) => setNotesValue(e.target.value)}
                   onBlur={handleNotesBlur}
                   placeholder="הוסף הערה..."
-                  className="w-full min-h-[120px] resize-y rounded-xl border border-border bg-background p-3 text-base text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
+                  className="w-full min-h-[120px] resize-y rounded-lg border border-border bg-background p-3 text-base text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
                 />
               </section>
             </div>
@@ -433,7 +435,7 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                   type="button"
                   onClick={handleMarkContacted}
                   disabled={savingFooter}
-                  className="w-full rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:opacity-50"
+                  className="btn-primary w-full disabled:opacity-50"
                 >
                   {savingFooter ? "שומר..." : "סמן כ'צור קשר'"}
                 </button>
@@ -445,7 +447,7 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                 <button
                   type="button"
                   onClick={() => setShowConvertModal(true)}
-                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong focus:outline-none focus:ring-2 focus:ring-accent/40"
+                  className="btn-primary w-full"
                 >
                   <Check size={16} /> המר ללקוח
                 </button>
@@ -461,7 +463,7 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
             role="dialog"
             aria-modal="true"
             aria-labelledby="convert-modal-title"
-            className="w-full max-w-sm rounded-2xl bg-surface p-5 shadow-xl"
+            className="panel w-full max-w-sm p-5 shadow-xl"
           >
             <h3 id="convert-modal-title" className="mb-4 text-lg font-black text-foreground">
               המרה ללקוח
@@ -470,7 +472,7 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
               <label className="flex items-center justify-between gap-3 text-sm">
                 <span className="min-w-0 text-muted">כמה גביתם על הקמה? (Setup Fee)</span>
                 <span className="flex shrink-0 items-center gap-1">
-                  <span className="text-muted">₪</span>
+                  <span className="text-muted font-mono">₪</span>
                   <input
                     type="number"
                     min="0"
@@ -478,14 +480,14 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                     value={setupFee}
                     onChange={(e) => setSetupFee(e.target.value)}
                     placeholder="0"
-                    className="w-24 rounded-lg border border-border bg-background px-2 py-1 text-base text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
+                    className="w-24 rounded-lg border border-border bg-background px-2 py-1 text-base font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
                   />
                 </span>
               </label>
               <label className="flex items-center justify-between gap-3 text-sm">
                 <span className="min-w-0 text-muted">כמה גביתם בחודש? (Monthly)</span>
                 <span className="flex shrink-0 items-center gap-1">
-                  <span className="text-muted">₪</span>
+                  <span className="text-muted font-mono">₪</span>
                   <input
                     type="number"
                     min="0"
@@ -493,7 +495,7 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                     value={monthlyRetainer}
                     onChange={(e) => setMonthlyRetainer(e.target.value)}
                     placeholder="0"
-                    className="w-24 rounded-lg border border-border bg-background px-2 py-1 text-base text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
+                    className="w-24 rounded-lg border border-border bg-background px-2 py-1 text-base font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
                   />
                 </span>
               </label>
@@ -503,7 +505,7 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                 type="button"
                 onClick={() => setShowConvertModal(false)}
                 disabled={convertSaving}
-                className="rounded-full bg-background px-4 py-2 text-sm font-bold text-foreground transition-colors hover:bg-accent-soft focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:opacity-50"
+                className="btn-outline disabled:opacity-50"
               >
                 ביטול
               </button>
@@ -511,7 +513,7 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                 type="button"
                 onClick={handleConvertConfirm}
                 disabled={convertSaving}
-                className="inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-strong focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:opacity-50"
+                className="btn-primary disabled:opacity-50"
               >
                 <Check size={16} /> {convertSaving ? "שומר..." : "אשר"}
               </button>

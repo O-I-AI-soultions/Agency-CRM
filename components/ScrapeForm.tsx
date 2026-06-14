@@ -177,7 +177,7 @@ export default function ScrapeForm() {
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+    <div className="panel p-6">
       <h2 className="text-lg font-bold text-foreground">סריקה חדשה</h2>
       <p className="mt-1 text-sm text-muted">
         חיפוש עסקים ללא אתר באמצעות Apify, ויצירת לידים חדשים ב-Airtable
@@ -195,7 +195,7 @@ export default function ScrapeForm() {
               value={niche}
               onChange={(e) => setNiche(e.target.value)}
               placeholder="לדוגמה: מספרות, מסעדות, קליניקות"
-              className="rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted/70 focus:outline-none focus:ring-2 focus:ring-accent/40"
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted/70 focus:outline-none focus:ring-2 focus:ring-accent/40"
             />
           </div>
 
@@ -209,7 +209,7 @@ export default function ScrapeForm() {
               value={city}
               onChange={(e) => setCity(e.target.value)}
               placeholder="לדוגמה: תל אביב, כפר סבא"
-              className="rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted/70 focus:outline-none focus:ring-2 focus:ring-accent/40"
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted/70 focus:outline-none focus:ring-2 focus:ring-accent/40"
             />
           </div>
 
@@ -224,21 +224,18 @@ export default function ScrapeForm() {
               max={50}
               value={limit}
               onChange={(e) => setLimit(Number(e.target.value))}
-              className="rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
             />
           </div>
 
           {error && (
-            <p role="alert" aria-live="assertive" className="sm:col-span-3 text-sm font-medium text-warn">
+            <p role="alert" aria-live="assertive" className="sm:col-span-3 rounded-lg border border-warn/30 bg-warn-soft px-3 py-2 text-sm font-medium text-warn">
               {error}
             </p>
           )}
 
           <div className="sm:col-span-3">
-            <button
-              type="submit"
-              className="inline-flex items-center gap-1.5 rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-accent-strong focus:outline-none focus:ring-2 focus:ring-accent/40"
-            >
+            <button type="submit" className="btn-primary">
               <Search size={16} /> הפעל סריקה
             </button>
           </div>
@@ -249,7 +246,7 @@ export default function ScrapeForm() {
         <div
           role="status"
           aria-live="polite"
-          className="mt-4 flex items-center gap-1.5 rounded-xl border border-amber/30 bg-amber-soft px-4 py-3 text-sm font-semibold text-foreground"
+          className="mt-4 flex items-center gap-1.5 rounded-lg border border-amber/30 bg-amber-soft px-4 py-3 text-sm font-semibold text-foreground"
         >
           <Loader2 size={16} className="animate-spin text-amber" /> הסריקה פועלת... (עשויה לקחת 1-3 דקות)
         </div>
@@ -259,13 +256,13 @@ export default function ScrapeForm() {
         <div
           role="status"
           aria-live="polite"
-          className="mt-4 flex flex-wrap items-center gap-1.5 rounded-xl border border-accent/30 bg-accent-soft px-4 py-3 text-sm font-semibold text-accent-strong"
+          className="mt-4 flex flex-wrap items-center gap-1.5 rounded-lg border border-accent/30 bg-accent-soft px-4 py-3 text-sm font-semibold text-accent-strong"
         >
-          <CheckCircle2 size={16} /> הסריקה הושלמה — נוצרו {leadsFound ?? 0} לידים חדשים!
+          <CheckCircle2 size={16} /> הסריקה הושלמה — נוצרו <span className="font-mono">{leadsFound ?? 0}</span> לידים חדשים!
           <button
             type="button"
             onClick={resetForm}
-            className="ms-3 rounded-full border border-accent/30 px-3 py-1.5 text-xs font-bold text-accent-strong transition-colors hover:bg-accent/10 focus:outline-none focus:ring-2 focus:ring-accent/40"
+            className="btn-outline ms-3 text-xs"
           >
             סריקה נוספת
           </button>
@@ -276,13 +273,13 @@ export default function ScrapeForm() {
         <div
           role="alert"
           aria-live="assertive"
-          className="mt-4 flex flex-wrap items-center gap-1.5 rounded-xl border border-warn/30 bg-warn-soft px-4 py-3 text-sm font-semibold text-warn"
+          className="mt-4 flex flex-wrap items-center gap-1.5 rounded-lg border border-warn/30 bg-warn-soft px-4 py-3 text-sm font-semibold text-warn"
         >
           <XCircle size={16} /> {error ?? "הסריקה נכשלה. נסה שוב."}
           <button
             type="button"
             onClick={resetForm}
-            className="ms-3 rounded-full border border-warn/30 px-3 py-1.5 text-xs font-bold text-warn transition-colors hover:bg-warn/10 focus:outline-none focus:ring-2 focus:ring-accent/40"
+            className="btn-danger ms-3 text-xs"
           >
             נסה שוב
           </button>

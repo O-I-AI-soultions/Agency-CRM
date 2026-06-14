@@ -69,7 +69,7 @@ export default async function LeadsPage({
 
     content =
       callList.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border bg-surface/60 px-6 py-12 text-center">
+        <div className="rounded-lg border border-dashed border-border px-6 py-12 text-center">
           <p className="flex items-center justify-center gap-1.5 text-sm text-muted">
             <PartyPopper size={16} /> כל הכבוד! אין לידים דחופים להיום
           </p>

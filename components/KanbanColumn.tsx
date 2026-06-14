@@ -47,25 +47,24 @@ export default function KanbanColumn({
   return (
     <div className="flex w-72 shrink-0 flex-col lg:w-auto">
       <div
-        className="flex items-center gap-2 rounded-t-xl px-3.5 py-3 text-white"
-        style={{ backgroundColor: color }}
+        className="flex items-center gap-2 rounded-t-lg border-b-2 bg-surface px-3.5 py-3"
+        style={{ borderColor: color }}
       >
-        <h2 className="font-display text-sm font-semibold">{title}</h2>
-        <span className="mr-auto rounded-full bg-white/25 px-2 py-0.5 text-xs font-bold">
-          {leads.length}
-        </span>
+        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
+        <h2 className="font-display text-sm font-semibold text-foreground">{title}</h2>
+        <span className="tag tag-muted mr-auto">{leads.length}</span>
       </div>
 
       <div
         data-column-status={status ?? "other"}
-        className={`kanban-column-dropzone flex min-h-[200px] flex-col gap-2 rounded-b-xl border border-t-0 p-2.5 transition-colors ${
+        className={`kanban-column-dropzone flex min-h-[200px] flex-col gap-2 rounded-b-lg border border-t-0 p-2.5 transition-colors ${
           isDropTarget
             ? "border-accent bg-accent-soft"
             : "border-border bg-black/[0.02]"
         }`}
       >
         {leads.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-border px-3 py-6 text-center text-sm text-muted">
+          <p className="rounded-lg border border-dashed border-border px-3 py-6 text-center text-sm text-muted">
             אין לידים
           </p>
         ) : (
