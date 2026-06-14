@@ -1,18 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Rubik, Sora } from "next/font/google";
+import { IBM_Plex_Sans_Hebrew, IBM_Plex_Mono } from "next/font/google";
 import Sidebar from "@/components/Sidebar";
 import { getCurrentPartner } from "@/lib/auth-server";
 import "./globals.css";
 
-const rubik = Rubik({
-  variable: "--font-rubik",
+const plexSans = IBM_Plex_Sans_Hebrew({
+  variable: "--font-plex-sans",
   subsets: ["hebrew", "latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
-const sora = Sora({
-  variable: "--font-sora",
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-plex-mono",
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
@@ -25,6 +26,10 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+// Inline, render-blocking: read the saved theme before first paint so there's
+// no flash of the wrong theme. Defaults to dark (the system's base theme).
+const THEME_INIT_SCRIPT = `(function(){try{if(localStorage.getItem('theme')==='light'){document.documentElement.classList.remove('dark')}else{document.documentElement.classList.add('dark')}}catch(e){document.documentElement.classList.add('dark')}})()`;
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -33,13 +38,21 @@ export default async function RootLayout({
   const partner = await getCurrentPartner();
 
   return (
-    <html lang="he" dir="rtl" className={`${rubik.variable} ${sora.variable} h-full antialiased`}>
+    <html
+      lang="he"
+      dir="rtl"
+      suppressHydrationWarning
+      className={`${plexSans.variable} ${plexMono.variable} dark h-full antialiased`}
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="min-h-full bg-background text-foreground">
         {partner ? (
           <>
             <a
               href="#main-content"
-              className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:right-2 focus:z-[60] focus:rounded-lg focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-white focus:outline-none focus:ring-2 focus:ring-accent/40"
+              className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:right-2 focus:z-[60] focus:rounded-lg focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
             >
               דלג לתוכן הראשי
             </a>

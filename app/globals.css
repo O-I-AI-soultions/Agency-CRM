@@ -1,57 +1,151 @@
 @import "tailwindcss";
 
+/*
+ * "Console" design system — single amber/orange accent, monospace data,
+ * border-driven panels. All color tokens are raw CSS variables on :root,
+ * overridden under .dark for the dark theme. @theme inline re-exposes them
+ * as Tailwind color utilities (bg-*, text-*, border-*) so existing class
+ * names keep working and repaint automatically on theme toggle.
+ */
+
 :root {
-  --background: #f4f6fb;
-  --foreground: #111827;
+  /* Base surfaces */
+  --background: #eef1f4;
+  --foreground: #14171c;
+  --surface: #ffffff;
+  --surface-2: #f4f5f8;
+  --muted: #5b6472;
+  --muted-2: #98a1b0;
+  --border: #dde1e7;
+
+  /* Accent — signature amber/orange */
+  --accent: #a6520a;
+  --accent-strong: #7c3d05;
+  --accent-soft: #fbe4cc;
+  --accent-foreground: #ffffff;
+
+  /* Secondary warm — gold (priority/rating highlights, distinct from accent) */
+  --amber: #ca8a04;
+  --amber-strong: #854d0e;
+  --amber-soft: #fdf0cf;
+
+  /* Success */
+  --green: #15803d;
+  --green-soft: #d7f0e2;
+
+  /* Danger */
+  --warn: #c0341f;
+  --warn-strong: #971f10;
+  --warn-soft: #fbe1dc;
+
+  /* Info / teal */
+  --sky: #0f766e;
+  --sky-soft: #d7f0ec;
+
+  /* Tertiary */
+  --purple: #6d5bd0;
+  --purple-soft: #e7e3fb;
+
+  /* Kanban column accents */
+  --col-new: var(--accent);
+  --col-review: #475569;
+  --col-proposal: var(--green);
+  --col-negotiation: var(--sky);
+  --col-lost: var(--purple);
+
+  /* Sidebar stays near-black in both themes */
+  --sidebar-bg: #0c0e13;
+  --sidebar-active: #1a1e26;
+  --sidebar-border: rgba(255, 255, 255, 0.07);
+
+  /* Subtle dot-grid texture */
+  --grid-dot: rgba(17, 20, 26, 0.05);
+}
+
+.dark {
+  --background: #0b0d12;
+  --foreground: #e7e9ee;
+  --surface: #12151c;
+  --surface-2: #181c25;
+  --muted: #8b94a3;
+  --muted-2: #5b6472;
+  --border: #262b35;
+
+  --accent: #ffb020;
+  --accent-strong: #ffd373;
+  --accent-soft: rgba(255, 176, 32, 0.14);
+  --accent-foreground: #1a1206;
+
+  --amber: #fbbf24;
+  --amber-strong: #fde68a;
+  --amber-soft: rgba(251, 191, 36, 0.14);
+
+  --green: #34d399;
+  --green-soft: rgba(52, 211, 153, 0.14);
+
+  --warn: #ff6b6b;
+  --warn-strong: #ffb3b3;
+  --warn-soft: rgba(255, 107, 107, 0.14);
+
+  --sky: #5eead4;
+  --sky-soft: rgba(94, 234, 212, 0.12);
+
+  --purple: #b3a6f5;
+  --purple-soft: rgba(179, 166, 245, 0.12);
+
+  --col-review: #94a3b8;
+
+  --sidebar-bg: #07080b;
+  --sidebar-active: #161a22;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+
+  --grid-dot: rgba(255, 255, 255, 0.045);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-surface: #ffffff;
-  --color-muted: #6b7280;
-  --color-muted-2: #9ca3af;
-  --color-border: #e5e8f0;
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-muted: var(--muted);
+  --color-muted-2: var(--muted-2);
+  --color-border: var(--border);
 
-  --color-accent: #3b82f6;
-  --color-accent-strong: #1d4ed8;
-  --color-accent-soft: #dbeafe;
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-foreground: var(--accent-foreground);
 
-  --color-green: #10b981;
-  --color-green-soft: #d1fae5;
+  --color-amber: var(--amber);
+  --color-amber-strong: var(--amber-strong);
+  --color-amber-soft: var(--amber-soft);
 
-  --color-warn: #ef4444;
-  --color-warn-strong: #b91c1c;
-  --color-warn-soft: #fee2e2;
+  --color-green: var(--green);
+  --color-green-soft: var(--green-soft);
 
-  --color-amber: #f59e0b;
-  --color-amber-strong: #b45309;
-  --color-amber-soft: #fef3c7;
+  --color-warn: var(--warn);
+  --color-warn-strong: var(--warn-strong);
+  --color-warn-soft: var(--warn-soft);
 
-  --color-sky: #0d9488;
-  --color-sky-soft: #ccfbf1;
+  --color-sky: var(--sky);
+  --color-sky-soft: var(--sky-soft);
 
-  --color-purple: #8b5cf6;
-  --color-purple-soft: #ede9fe;
+  --color-purple: var(--purple);
+  --color-purple-soft: var(--purple-soft);
 
-  /* Kanban column accents */
-  --col-new: #3b82f6;
-  --col-review: #374151;
-  --col-proposal: #f59e0b;
-  --col-negotiation: #0d9488;
-  --col-lost: #7c5cbf;
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-border: var(--sidebar-border);
 
-  /* Sidebar */
-  --color-sidebar-bg: #12172b;
-  --color-sidebar-active: #1e2640;
-  --color-sidebar-border: rgba(255, 255, 255, 0.06);
-
-  --font-sans: var(--font-rubik);
-  --font-display: var(--font-sora);
+  --font-sans: var(--font-plex-sans);
+  --font-display: var(--font-plex-sans);
+  --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
+  background-image: radial-gradient(circle at 1px 1px, var(--grid-dot) 1px, transparent 0);
+  background-size: 28px 28px;
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
@@ -60,21 +154,114 @@ body {
   font-family: var(--font-display), var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
-/* Card depth */
+/* ----------------------------------------------------------------------
+ * Component primitives
+ * ------------------------------------------------------------------- */
+@layer components {
+  /* Border-driven container — the base "card" of the console system */
+  .panel {
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    border-radius: 0.625rem;
+  }
+
+  .panel-hover {
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .panel-hover:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+
+  /* Small bordered, monospace status/priority tag — replaces pastel pills */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    border-radius: 0.25rem;
+    border: 1px solid transparent;
+    padding: 0.125rem 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.5;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .tag-accent { color: var(--color-accent); background-color: var(--color-accent-soft); border-color: var(--color-accent-soft); }
+  .tag-amber { color: var(--color-amber-strong); background-color: var(--color-amber-soft); border-color: var(--color-amber-soft); }
+  .tag-green { color: var(--color-green); background-color: var(--color-green-soft); border-color: var(--color-green-soft); }
+  .tag-warn { color: var(--color-warn); background-color: var(--color-warn-soft); border-color: var(--color-warn-soft); }
+  .tag-sky { color: var(--color-sky); background-color: var(--color-sky-soft); border-color: var(--color-sky-soft); }
+  .tag-purple { color: var(--color-purple); background-color: var(--color-purple-soft); border-color: var(--color-purple-soft); }
+  .tag-muted { color: var(--color-muted); background-color: var(--color-surface-2); border-color: var(--color-border); }
+
+  /* Buttons — rectangular, border-driven, no more pill shapes */
+  .btn-primary,
+  .btn-outline,
+  .btn-ghost,
+  .btn-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    border: 1px solid transparent;
+    transition: filter 0.15s ease, transform 0.15s ease, background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .btn-primary {
+    background-color: var(--color-accent);
+    color: var(--color-accent-foreground);
+    border-color: var(--color-accent);
+  }
+  .btn-primary:hover { filter: brightness(1.08); }
+  .btn-primary:disabled { opacity: 0.5; filter: none; }
+
+  .btn-outline {
+    background-color: transparent;
+    color: var(--color-foreground);
+    border-color: var(--color-border);
+  }
+  .btn-outline:hover { border-color: var(--color-accent); color: var(--color-accent); }
+  .btn-outline:disabled { opacity: 0.5; }
+
+  .btn-ghost {
+    background-color: transparent;
+    color: var(--color-muted);
+    border-color: transparent;
+  }
+  .btn-ghost:hover { background-color: var(--color-surface-2); color: var(--color-foreground); }
+
+  .btn-danger {
+    background-color: transparent;
+    color: var(--color-warn);
+    border-color: color-mix(in srgb, var(--color-warn) 35%, transparent);
+  }
+  .btn-danger:hover { background-color: var(--color-warn-soft); }
+  .btn-danger:disabled { opacity: 0.5; }
+}
+
+/* Back-compat aliases for not-yet-migrated components */
 .card-shadow {
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.07),
-    0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .card-shadow-hover {
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card-shadow-hover:hover {
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.12),
-    0 8px 24px rgba(0, 0, 0, 0.08);
+  border-color: var(--color-accent);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   transform: translateY(-2px);
 }
 
