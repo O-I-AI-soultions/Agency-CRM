@@ -123,6 +123,10 @@ export async function updateLeadFields(
   await base(LEAD_TRACKER_TABLE).update(recordId, fields as Partial<Airtable.FieldSet>);
 }
 
+export async function deleteLead(recordId: string): Promise<void> {
+  await base(LEAD_TRACKER_TABLE).destroy(recordId);
+}
+
 export async function listClients(): Promise<ClientRecord[]> {
   const records = await base(CLIENTS_TABLE).select().all();
   return records.map(mapClientRecord);

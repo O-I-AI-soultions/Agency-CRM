@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { KanbanStatus, LeadStatus } from "@/lib/types";
-import { updateLeadStatusClient } from "@/lib/leads-client";
+import { deleteLeadClient, updateLeadStatusClient } from "@/lib/leads-client";
 
 interface StatusActionButtonsProps {
   leadId: string;
@@ -15,12 +15,19 @@ interface StatusActionButtonsProps {
    * for Bug 1 — cards move to their new column without a full page reload.
    */
   onStatusChange?: (status: KanbanStatus) => void;
+  /**
+   * Optional callback invoked immediately (optimistically) when a lead is
+   * deleted (via the "לא מעוניין" action), so the parent can remove the
+   * card from its local state without waiting for `router.refresh()`.
+   */
+  onDeleted?: (leadId: string) => void;
 }
 
 export default function StatusActionButtons({
   leadId,
   currentStatus,
   onStatusChange,
+  onDeleted,
 }: StatusActionButtonsProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -41,6 +48,30 @@ export default function StatusActionButtons({
       router.refresh();
     } catch {
       setError("שגיאה בעדכון");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // "Not interested" leads are removed from the CRM entirely rather than
+  // kept around with a hidden status.
+  const handleNotInterested = async () => {
+    if (!window.confirm("האם למחוק את הליד? הפעולה אינה הפיכה.")) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const ok = await deleteLeadClient(leadId);
+
+      if (!ok) {
+        throw new Error("Request failed");
+      }
+
+      onDeleted?.(leadId);
+      router.refresh();
+    } catch {
+      setError("שגיאה במחיקה");
     } finally {
       setIsLoading(false);
     }
@@ -76,7 +107,7 @@ export default function StatusActionButtons({
           type="button"
           className={outlineGrayClasses}
           disabled={isLoading}
-          onClick={() => updateStatus("Not Interested")}
+          onClick={handleNotInterested}
           suppressHydrationWarning
         >
           לא מעוניין
@@ -99,7 +130,7 @@ export default function StatusActionButtons({
           type="button"
           className={outlineGrayClasses}
           disabled={isLoading}
-          onClick={() => updateStatus("Not Interested")}
+          onClick={handleNotInterested}
           suppressHydrationWarning
         >
           לא מעוניין
@@ -112,7 +143,7 @@ export default function StatusActionButtons({
         type="button"
         className={outlineGrayClasses}
         disabled={isLoading}
-        onClick={() => updateStatus("Not Interested")}
+        onClick={handleNotInterested}
         suppressHydrationWarning
       >
         לא מעוניין

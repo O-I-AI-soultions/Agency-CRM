@@ -22,3 +22,17 @@ export async function updateLeadStatusClient(
     return false;
   }
 }
+
+/**
+ * Permanently deletes a lead via `DELETE /api/leads/[id]`. Used when marking
+ * a lead as "not interested" — rather than keeping a hidden "Not Interested"
+ * status, the lead is removed from the CRM entirely.
+ */
+export async function deleteLeadClient(leadId: string): Promise<boolean> {
+  try {
+    const res = await fetch(`/api/leads/${leadId}`, { method: "DELETE" });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}

@@ -20,6 +20,7 @@ interface KanbanColumnProps {
   status: KanbanStatus | null;
   onSelect: (lead: LeadRecord) => void;
   onStatusChange: (leadId: string, newStatus: KanbanStatus) => void;
+  onDelete: (leadId: string) => void;
   draggedLeadId: string | null;
   dropTargetStatus: KanbanStatus | null;
   isDropTarget: boolean;
@@ -34,6 +35,7 @@ export default function KanbanColumn({
   status,
   onSelect,
   onStatusChange,
+  onDelete,
   draggedLeadId,
   dropTargetStatus,
   isDropTarget,
@@ -73,6 +75,7 @@ export default function KanbanColumn({
               lead={lead}
               onSelect={onSelect}
               onStatusChange={onStatusChange}
+              onDelete={onDelete}
               accentColor={color}
               index={index}
               isDragging={draggedLeadId === lead.id}

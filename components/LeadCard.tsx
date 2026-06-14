@@ -33,6 +33,8 @@ interface LeadCardProps {
   onDrop?: (leadId: string, newStatus: KanbanStatus) => void;
   /** Optimistic status-change callback bubbled up from StatusActionButtons. */
   onStatusChange?: (leadId: string, newStatus: KanbanStatus) => void;
+  /** Optimistic delete callback bubbled up from StatusActionButtons. */
+  onDelete?: (leadId: string) => void;
 }
 
 export default function LeadCard({
@@ -44,6 +46,7 @@ export default function LeadCard({
   onDragStateChange,
   onDrop,
   onStatusChange,
+  onDelete,
 }: LeadCardProps) {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const pointerState = useRef<{
@@ -261,6 +264,7 @@ export default function LeadCard({
           onStatusChange={
             onStatusChange ? (status) => onStatusChange(lead.id, status) : undefined
           }
+          onDeleted={onDelete}
         />
       </div>
     </div>

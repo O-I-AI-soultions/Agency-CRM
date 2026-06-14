@@ -103,6 +103,16 @@ export default function KanbanBoard({ leads: initialLeads, partner }: KanbanBoar
   }
 
   /**
+   * Called when a lead is permanently deleted (the "לא מעוניין" action in
+   * StatusActionButtons). Removes the card from local state and closes the
+   * drawer if it was open for this lead.
+   */
+  function handleDelete(leadId: string) {
+    setLeads((prev) => prev.filter((lead) => lead.id !== leadId));
+    setSelectedLead((prev) => (prev && prev.id === leadId ? null : prev));
+  }
+
+  /**
    * Drag-and-drop drop handler. Optimistically moves the card to the new
    * column, then calls the shared status-update helper. On failure, rolls
    * back the optimistic update and shows an error banner.
@@ -202,6 +212,7 @@ export default function KanbanBoard({ leads: initialLeads, partner }: KanbanBoar
             status={column.status}
             onSelect={setSelectedLead}
             onStatusChange={handleStatusChange}
+            onDelete={handleDelete}
             draggedLeadId={draggedLeadId}
             dropTargetStatus={dropTargetStatus}
             isDropTarget={column.status !== null && dropTargetStatus === column.status}
