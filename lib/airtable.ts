@@ -11,6 +11,7 @@ import {
   type KanbanStatus,
   type LeadRecord,
   type NoteRecord,
+  type PartnerSettings,
   type Priority,
   type RoadmapColor,
   type RoadmapOwner,
@@ -744,6 +745,98 @@ export async function getPartnerNote(partner: Partner): Promise<NoteRecord | nul
 
   const record = records[0];
   return record ? mapNoteRecord(record) : null;
+}
+
+export async function getPartnerSettings(partner: Partner): Promise<PartnerSettings> {
+  const records = await base(PARTNERS_TABLE)
+    .select({ filterByFormula: `{Name} = "${escapeFormulaValue(partner)}"`, maxRecords: 1 })
+    .all();
+
+  const record = records[0];
+  if (!record) {
+    return {
+      googleConnected: false,
+      googleEmail: null,
+      makeWebhookUrl: null,
+      makeApiKey: null,
+      scrapeDefaultCity: null,
+      scrapeDefaultNiche: null,
+      scrapeDefaultLimit: null,
+    };
+  }
+
+  const fields = record.fields;
+  const accessToken = (fields["Google Access Token"] as string | undefined)?.trim();
+
+  return {
+    googleConnected: !!accessToken,
+    googleEmail: (fields["Google Email"] as string) ?? null,
+    makeWebhookUrl: (fields["Make Webhook URL"] as string) ?? null,
+    makeApiKey: (fields["Make API Key"] as string) ?? null,
+    scrapeDefaultCity: (fields["Scrape Default City"] as string) ?? null,
+    scrapeDefaultNiche: (fields["Scrape Default Niche"] as string) ?? null,
+    scrapeDefaultLimit: (fields["Scrape Default Limit"] as number) ?? null,
+  };
+}
+
+export interface PartnerSettingsUpdate {
+  googleAccessToken?: string | null;
+  googleRefreshToken?: string | null;
+  googleTokenExpiry?: string | null;
+  googleEmail?: string | null;
+  makeWebhookUrl?: string | null;
+  makeApiKey?: string | null;
+  scrapeDefaultCity?: string | null;
+  scrapeDefaultNiche?: string | null;
+  scrapeDefaultLimit?: number | null;
+}
+
+export async function updatePartnerSettings(
+  partner: Partner,
+  updates: PartnerSettingsUpdate
+): Promise<void> {
+  const fields: Record<string, unknown> = {};
+  if ("googleAccessToken" in updates) fields["Google Access Token"] = updates.googleAccessToken ?? "";
+  if ("googleRefreshToken" in updates) fields["Google Refresh Token"] = updates.googleRefreshToken ?? "";
+  if ("googleTokenExpiry" in updates) fields["Google Token Expiry"] = updates.googleTokenExpiry ?? null;
+  if ("googleEmail" in updates) fields["Google Email"] = updates.googleEmail ?? "";
+  if ("makeWebhookUrl" in updates) fields["Make Webhook URL"] = updates.makeWebhookUrl ?? "";
+  if ("makeApiKey" in updates) fields["Make API Key"] = updates.makeApiKey ?? "";
+  if ("scrapeDefaultCity" in updates) fields["Scrape Default City"] = updates.scrapeDefaultCity ?? "";
+  if ("scrapeDefaultNiche" in updates) fields["Scrape Default Niche"] = updates.scrapeDefaultNiche ?? "";
+  if ("scrapeDefaultLimit" in updates) fields["Scrape Default Limit"] = updates.scrapeDefaultLimit ?? null;
+
+  const records = await base(PARTNERS_TABLE)
+    .select({ filterByFormula: `{Name} = "${escapeFormulaValue(partner)}"`, maxRecords: 1 })
+    .all();
+
+  const record = records[0];
+  if (record) {
+    await base(PARTNERS_TABLE).update(record.id, fields as Partial<Airtable.FieldSet>);
+  } else {
+    await base(PARTNERS_TABLE).create({ Name: partner, ...fields } as Partial<Airtable.FieldSet>);
+  }
+}
+
+export async function getPartnerGoogleTokens(
+  partner: Partner
+): Promise<{ accessToken: string; refreshToken: string; expiry: string | null } | null> {
+  const records = await base(PARTNERS_TABLE)
+    .select({ filterByFormula: `{Name} = "${escapeFormulaValue(partner)}"`, maxRecords: 1 })
+    .all();
+
+  const record = records[0];
+  if (!record) return null;
+
+  const accessToken = (record.fields["Google Access Token"] as string | undefined)?.trim();
+  const refreshToken = (record.fields["Google Refresh Token"] as string | undefined)?.trim();
+  if (!accessToken || !refreshToken) return null;
+
+  return {
+    accessToken,
+    refreshToken,
+    expiry: (record.fields["Google Token Expiry"] as string) ?? null,
+  };
 }
 
 export async function upsertPartnerNote(partner: Partner, content: string): Promise<NoteRecord> {

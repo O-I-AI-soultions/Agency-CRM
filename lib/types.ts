@@ -133,6 +133,16 @@ export interface NoteRecord {
   updatedAt: string;
 }
 
+export interface PartnerSettings {
+  googleConnected: boolean;
+  googleEmail: string | null;
+  makeWebhookUrl: string | null;
+  makeApiKey: string | null;
+  scrapeDefaultCity: string | null;
+  scrapeDefaultNiche: string | null;
+  scrapeDefaultLimit: number | null;
+}
+
 export interface RoadmapTaskRecord {
   id: string;
   title: string;
