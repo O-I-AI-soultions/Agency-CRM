@@ -160,6 +160,25 @@ describe("KanbanBoard drag-and-drop", () => {
     expect(newLeadDropzone?.textContent).toContain("Acme Co");
   });
 
+  it("renders the staleness badge and outreach count on each card", () => {
+    const leads: LeadRecord[] = [
+      makeLead({
+        id: "lead-1",
+        businessName: "Acme Co",
+        status: "New Lead",
+        followUpCount: 3,
+        lastContacted: new Date(Date.now() - 15 * 86_400_000).toISOString(),
+      }),
+    ];
+
+    render(<KanbanBoard leads={leads} partner="איתי" />);
+
+    const card = screen.getByText("Acme Co").closest('[role="button"]')!;
+    // Stale (>10 days since lastContacted) renders as "15d".
+    expect(card.textContent).toContain("15d");
+    expect(card.textContent).toContain("3 ניסיונות יצירת קשר");
+  });
+
   it("opens the LeadDrawer on a plain click without dragging", async () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: true });
 
