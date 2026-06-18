@@ -1,5 +1,6 @@
 import type { ClientRecord } from "@/lib/types";
 import StatusToggle from "@/components/StatusToggle";
+import RenewalDateEditor from "@/components/RenewalDateEditor";
 
 function formatCurrency(value: number | null): string {
   if (value === null) return "—";
@@ -24,6 +25,9 @@ export default function ClientsTable({ clients }: { clients: ClientRecord[] }) {
             <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
               סטטוס
             </th>
+            <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
+              תאריך חידוש
+            </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
@@ -40,6 +44,9 @@ export default function ClientsTable({ clients }: { clients: ClientRecord[] }) {
               </td>
               <td className="px-4 py-3 text-sm">
                 <StatusToggle clientId={client.id} currentStatus={client.status} />
+              </td>
+              <td className="px-4 py-3 text-sm">
+                <RenewalDateEditor client={client} />
               </td>
             </tr>
           ))}

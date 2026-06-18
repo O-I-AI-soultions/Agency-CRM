@@ -88,6 +88,7 @@ function mapClientRecord(record: Airtable.Record<Airtable.FieldSet>): ClientReco
     setupFee: (fields["Setup Fee"] as number) ?? null,
     monthlyRetainer: (fields["Monthly Retainer"] as number) ?? null,
     status: (fields["Status"] as ClientStatus) ?? null,
+    renewalDate: (fields["Renewal Date"] as string) ?? null,
   };
 }
 
@@ -140,6 +141,18 @@ export async function updateClientStatus(
   await base(CLIENTS_TABLE).update(recordId, {
     Status: status,
   });
+}
+
+export async function updateClientRenewalDate(
+  recordId: string,
+  renewalDate: string | null
+): Promise<void> {
+  // Airtable's FieldSet type doesn't accept `null` directly even though the
+  // API allows it to clear a field's value — cast like other nullable
+  // updates in this file (see PARTNERS_TABLE usage above).
+  await base(CLIENTS_TABLE).update(recordId, {
+    "Renewal Date": renewalDate,
+  } as Partial<Airtable.FieldSet>);
 }
 
 function mapScrapeHistoryRecord(

@@ -1,5 +1,19 @@
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import type { ScrapeHistoryRecord } from "@/lib/types";
+import { computeYieldRate } from "@/lib/types";
+
+// Yield-rate color thresholds: a run that returns at least half of its
+// requested `limit` as leads is doing well (green); 20-50% is a mediocre
+// but usable run (amber); below 20% suggests the city/niche combination is
+// too narrow or oversaturated and should be revisited (red).
+const YIELD_GREEN_MIN = 50;
+const YIELD_AMBER_MIN = 20;
+
+function yieldTagClass(rate: number): string {
+  if (rate >= YIELD_GREEN_MIN) return "tag tag-green";
+  if (rate >= YIELD_AMBER_MIN) return "tag tag-amber";
+  return "tag tag-warn";
+}
 
 const STATUS_LABELS: Record<string, string> = {
   Running: "פועל",
@@ -65,12 +79,17 @@ export default function ScrapeHistory({ runs }: { runs: ScrapeHistoryRecord[] })
               לידים שנוצרו
             </th>
             <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
+              תפוקה
+            </th>
+            <th scope="col" className="px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted">
               הופעל על ידי
             </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
-          {runs.map((run) => (
+          {runs.map((run) => {
+            const yieldRate = computeYieldRate(run.leadsFound, run.limit);
+            return (
             <tr key={run.id} className="transition-colors hover:bg-surface-2">
               <td className="px-4 py-3 text-sm font-mono tabular-nums text-foreground/80">
                 {formatDate(run.date)}
@@ -95,9 +114,13 @@ export default function ScrapeHistory({ runs }: { runs: ScrapeHistoryRecord[] })
               <td className="px-4 py-3 text-sm font-mono tabular-nums font-bold text-accent-strong">
                 {run.leadsFound}
               </td>
+              <td className="px-4 py-3 text-sm">
+                <span className={yieldTagClass(yieldRate)}>{Math.round(yieldRate)}%</span>
+              </td>
               <td className="px-4 py-3 text-sm text-foreground/80">{run.triggeredBy}</td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
     </div>

@@ -51,6 +51,28 @@ export interface ClientRecord {
   setupFee: number | null;
   monthlyRetainer: number | null;
   status: ClientStatus | null;
+  renewalDate: string | null;
+}
+
+// Renewal is considered "due soon" within this many days of today (inclusive
+// of overdue renewals, i.e. a negative day count also counts as due soon).
+// 30 days gives enough lead time to reach out before a contract lapses.
+const RENEWAL_DUE_SOON_DAYS = 30;
+
+/**
+ * Returns true when a client's `renewalDate` is today, in the past
+ * (overdue), or within the next `RENEWAL_DUE_SOON_DAYS` days. Used to flag
+ * clients that need an outreach/renewal conversation soon. Clients with no
+ * `renewalDate` are never flagged — there's nothing to compare against.
+ */
+export function isRenewalDueSoon(client: ClientRecord): boolean {
+  if (!client.renewalDate) return false;
+
+  const renewal = new Date(client.renewalDate);
+  if (Number.isNaN(renewal.getTime())) return false;
+
+  const daysUntil = Math.floor((renewal.getTime() - Date.now()) / 86_400_000);
+  return daysUntil <= RENEWAL_DUE_SOON_DAYS;
 }
 
 export type ScrapeRunStatus = "Running" | "Completed" | "Failed";
@@ -65,6 +87,20 @@ export interface ScrapeHistoryRecord {
   status: ScrapeRunStatus | null;
   leadsFound: number;
   triggeredBy: string;
+}
+
+/**
+ * Computes the "yield rate" of a scrape run — the share of the requested
+ * `limit` that actually came back as leads — as a percentage (0-100).
+ * Apify run cost data isn't part of this codebase's current integration (no
+ * usage/cost figure is fetched in `app/api/scrape/start` or
+ * `app/api/scrape/complete`), so this ratio is used as a lightweight proxy
+ * for how productive a scrape run was, without adding a new Airtable field
+ * or a separate Apify API call.
+ */
+export function computeYieldRate(leadsFound: number, limit: number): number {
+  if (!limit || limit <= 0) return 0;
+  return (leadsFound / limit) * 100;
 }
 
 export const TASK_STATUSES = ["To Do", "In Progress", "Done"] as const;

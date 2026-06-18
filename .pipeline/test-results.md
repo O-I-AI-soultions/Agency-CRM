@@ -1,51 +1,53 @@
-# Test Results
+# Test Results — Final Pass (after Task 8 / end of 8-task run)
 
-**Status: PASS** (with verification caveat — see below)
+Branch tip: `task-8-churn-yield` (stacked: `main` → task-1...task-7 → task-8). Run from a clean working tree with all 8 tasks' changes applied.
 
-## Coverage
+## Lint
 
-The tester agent added a Vitest + React Testing Library suite (jsdom environment):
+```
+npm run lint
+```
+**Result: PASS** — 0 errors, 1 pre-existing warning (`components/TaskDrawer.tsx:92`, `react-hooks/exhaustive-deps`, not introduced by this run).
 
-- `lib/__tests__/filters.test.ts` — filter logic (city/niche partial match, status, rating)
-- `lib/__tests__/priority.test.ts` — `computePriority()` scoring used by the urgent-leads list
-- `lib/__tests__/leads-client.test.ts` — `updateLeadStatusClient` success/failure paths
-- `components/dashboard/__tests__/UrgentLeadsCard.test.tsx` — top-5 urgent leads, Converted exclusion
-- `components/__tests__/KanbanBoard.test.tsx` (7 tests) — drag-and-drop optimistic move, rollback on
-  API failure, no-op for same-column/"אחר" drops, click-to-open drawer, drag-suppresses-drawer-open
+## Build
 
-In an earlier full run during this session, 55/57 tests passed. The 2 failures were both in
-`KanbanBoard.test.tsx`:
+```
+npm run build
+```
+**Result: PASS** — `next build` compiles and type-checks successfully; all 19 routes (static + dynamic) generate without errors.
 
-1. **"rolls back the optimistic update and shows an error when the API call fails"** — root cause:
-   `applyOptimisticStatus` in `components/KanbanBoard.tsx` tried to capture the lead's prior state
-   via a variable assigned *inside* a `setState` updater function, then returned it synchronously.
-   React doesn't guarantee the updater runs before the function returns, so the captured value was
-   always `null`/stale, and `handleDrop`'s `if (!ok && previous)` rollback branch never fired.
-   **Fix**: `applyOptimisticStatus` now returns `void`; `handleDrop` captures `previous = lead`
-   (already available from the `leads.find(...)` call at the top of the function) *before* calling
-   `applyOptimisticStatus`, and the failure check is simply `if (!ok)`.
+## Unit tests
 
-2. **"does not open the drawer when a drag occurred (drag threshold exceeded)"** — root cause:
-   `components/LeadCard.tsx`'s `endDrag` set `pointerState.current = null` at its start, so by the
-   time the synthetic `click` event fired after `pointerup`, `handleClick`'s check of
-   `pointerState.current?.dragging` was always falsy, and the drawer opened anyway.
-   **Fix**: added a `justDraggedRef` ref. `endDrag` sets it to `true` only when a real drag
-   occurred; `handleClick` checks and clears it, suppressing the click-driven `onSelect` exactly
-   once after a drag.
+```
+npx vitest run
+```
+**Result: PASS**
 
-Both fixes were applied this session (see `git diff` for `components/KanbanBoard.tsx` and
-`components/LeadCard.tsx`).
+- Test files: 12 passed (12)
+- Tests: 89 passed (89)
 
-## Verification caveat
+| Test file | Notes |
+|---|---|
+| `lib/__tests__/clients.test.ts` | New (Task 8, Part A) — `isRenewalDueSoon` |
+| `lib/__tests__/scrape-yield.test.ts` | New (Task 8, Part B) — `computeYieldRate` |
+| `lib/__tests__/staleness.test.ts` | Task 7 — `computeStaleness` |
+| `lib/__tests__/convertLeadToClient.test.ts` | Task 3 — convert-lead-to-client failure path |
+| `lib/__tests__/getPartnerNoteSafe.test.ts` | Task 2 — defensive notes wrapper |
+| `lib/__tests__/leads-client.test.ts` | Pre-existing |
+| `lib/__tests__/filters.test.ts` | Pre-existing |
+| `lib/__tests__/priority.test.ts` | Pre-existing |
+| `lib/__tests__/priority-labels.test.ts` | Pre-existing |
+| `lib/__tests__/whatsapp.test.ts` | Pre-existing |
+| `components/__tests__/KanbanBoard.test.tsx` | Pre-existing |
+| `components/dashboard/__tests__/UrgentLeadsCard.test.tsx` | Pre-existing |
 
-`npm run lint`, `npm run build`, and `npx vitest run` could not be executed to completion in this
-session — every invocation hung indefinitely (near-zero CPU usage, no output) in this Dropbox-synced
-working directory, regardless of pool config (`forks`/`threads`), shell (bash/PowerShell), or
-foreground/background mode. This is an environment issue unrelated to the code changes (the same
-commands ran successfully earlier in this session for the initial implementation).
+No regressions found across any of the 8 tasks' changes.
 
-**Action needed before merging**: run `npm run lint`, `npm run build`, and `npm run test` locally to
-confirm the full suite (57/57 expected) and build pass with these two fixes applied.
+## Airtable schema changes (live, via MCP)
 
-Also removed the scratch `components/__tests__/debug.test.tsx` and `.pipeline/debug-out.txt` files
-that were created during debugging and are not part of the intended test suite.
+- Added `Renewal Date` (date, ISO format `YYYY-MM-DD`) to the `Clients` table (`tblnlgTEt7QlqFmeW`) in base `appecLcxk0qS8mNGV`. Confirmed via `list_tables_for_base` that the field did not previously exist before creating it.
+- No other schema changes made in this run.
+
+## Deployment status
+
+**Nothing merged, nothing deployed.** All 8 tasks live on separate stacked branches with open PRs (#1–#8) against `main` in `O-I-AI-soultions/Agency-CRM`. `main` itself is untouched by this run.

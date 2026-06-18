@@ -7,7 +7,7 @@ import AccountTab from "@/components/settings/AccountTab";
 import IntegrationsTab from "@/components/settings/IntegrationsTab";
 import AppearanceTab from "@/components/settings/AppearanceTab";
 import PipelineTab from "@/components/settings/PipelineTab";
-import type { PartnerSettings } from "@/lib/types";
+import type { PartnerSettings, ScrapeHistoryRecord } from "@/lib/types";
 import type { Partner } from "@/lib/auth";
 
 type Tab = "account" | "integrations" | "appearance" | "pipeline";
@@ -24,6 +24,7 @@ interface SettingsClientProps {
   initialSettings: PartnerSettings;
   googleConfigured: boolean;
   apifyConfigured: boolean;
+  scrapeHistory: ScrapeHistoryRecord[];
 }
 
 function computeInitialBanner(connected: string | null, error: string | null) {
@@ -41,6 +42,7 @@ export default function SettingsClient({
   initialSettings,
   googleConfigured,
   apifyConfigured,
+  scrapeHistory,
 }: SettingsClientProps) {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab") as Tab | null;
@@ -105,7 +107,9 @@ export default function SettingsClient({
           />
         )}
         {activeTab === "appearance" && <AppearanceTab />}
-        {activeTab === "pipeline" && <PipelineTab settings={initialSettings} />}
+        {activeTab === "pipeline" && (
+          <PipelineTab settings={initialSettings} scrapeHistory={scrapeHistory} />
+        )}
       </div>
     </div>
   );
