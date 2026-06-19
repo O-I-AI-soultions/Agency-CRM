@@ -70,6 +70,10 @@ Both partners use the same deployed URL and log in with their own name + passwor
 
 ## Notes
 
-- This is a separate repo from the main O-I lead-pipeline project — see
-  [O-I-AI-soultions/O-I](https://github.com/O-I-AI-soultions) for the Apify → Make →
-  Airtable scraping pipeline that feeds the "Lead Tracker" table.
+- The Apify → Make → Airtable lead-scraping pipeline that feeds the "Lead Tracker"
+  table lives **in this repo**, not in a separate project. The scraping trigger and
+  history live under `app/api/scrape/` (`components/ScrapeForm.tsx`,
+  `components/ScrapeHistory.tsx`), and pipeline configuration (Apify token, target
+  Airtable base, etc.) is managed via the Settings → Pipeline tab
+  (`components/settings/PipelineTab.tsx`, `app/api/settings/pipeline/route.ts`).
+  There is no separate scraping repo to look for.
