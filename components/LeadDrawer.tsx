@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X, Phone, MessageCircle, MapPin, Star, Check, PartyPopper, AlertTriangle, Globe } from "lucide-react";
 import { KANBAN_STATUSES, type KanbanStatus, type LeadRecord } from "@/lib/types";
 import type { Partner } from "@/lib/auth";
 import PriorityBadge from "@/components/PriorityBadge";
 import { toWhatsAppNumber, buildWhatsAppMessage } from "@/lib/whatsapp";
-import { generateSiteClient, type SiteCategory } from "@/lib/leads-client";
+import { generateSiteClient, checkDeployStatusClient, type SiteCategory } from "@/lib/leads-client";
+
+const DEPLOY_POLL_INTERVAL_MS = 5000;
+const DEPLOY_POLL_MAX_ATTEMPTS = 36; // ~3 minutes at 5s intervals
 
 const STATUS_LABELS: Record<KanbanStatus, string> = {
   "New Lead": "לידים חדשים",
@@ -73,6 +76,20 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
   const [siteError, setSiteError] = useState<string | null>(null);
   const [sitePartialRepoUrl, setSitePartialRepoUrl] = useState<string | null>(null);
   const [siteResultUrl, setSiteResultUrl] = useState<string | null>(null);
+  const [siteLiveUrl, setSiteLiveUrl] = useState<string | null>(null);
+  const [siteDeployStatus, setSiteDeployStatus] = useState<
+    "idle" | "deploying" | "ready" | "timeout" | "error"
+  >("idle");
+  // Interval id for the deploy-status poll. A ref (not state) since it's an
+  // imperative handle, not something the render output depends on.
+  const deployPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  function stopDeployPolling() {
+    if (deployPollRef.current) {
+      clearInterval(deployPollRef.current);
+      deployPollRef.current = null;
+    }
+  }
 
   const isOpen = lead !== null;
 
@@ -89,7 +106,26 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
     setSiteError(null);
     setSitePartialRepoUrl(null);
     setSiteResultUrl(null);
+    setSiteLiveUrl(null);
+    setSiteDeployStatus("idle");
   }
+
+  // Stop any in-flight deploy-status poll whenever the open lead changes or
+  // the drawer unmounts (covers both switching leads and closing mid-poll).
+  useEffect(() => {
+    return () => stopDeployPolling();
+  }, [openLeadId]);
+
+  // The drawer is kept mounted by its parents (KanbanBoard, UrgentLeadsCard)
+  // even when closed — `lead` just becomes null and the drawer CSS-slides
+  // offscreen. The effect above is keyed on `openLeadId`, which the
+  // `lead && ...` render-time block never updates when `lead` goes null, so
+  // closing the drawer (overlay click / X / Escape) would otherwise leave any
+  // in-flight deploy-status poll running invisibly. Stop it explicitly
+  // whenever the drawer closes, same as `closeSiteModal` does for its modal.
+  useEffect(() => {
+    if (!isOpen) stopDeployPolling();
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -216,6 +252,38 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
     }
   }
 
+  function startDeployPolling(leadId: string, deploymentId: string) {
+    stopDeployPolling();
+    setSiteDeployStatus("deploying");
+
+    let attempts = 0;
+    deployPollRef.current = setInterval(async () => {
+      attempts += 1;
+      const result = await checkDeployStatusClient(leadId, deploymentId);
+
+      if (result.status === "ready") {
+        stopDeployPolling();
+        setSiteLiveUrl(result.liveUrl);
+        setSiteDeployStatus("ready");
+        showToast({ icon: PartyPopper, text: "האתר באוויר!" });
+        return;
+      }
+
+      if (result.status === "error") {
+        stopDeployPolling();
+        setSiteDeployStatus("error");
+        setSiteError(result.error);
+        return;
+      }
+
+      // still "building" — keep polling unless we've hit the attempt cap.
+      if (attempts >= DEPLOY_POLL_MAX_ATTEMPTS) {
+        stopDeployPolling();
+        setSiteDeployStatus("timeout");
+      }
+    }, DEPLOY_POLL_INTERVAL_MS);
+  }
+
   async function handleGenerateSiteConfirm() {
     if (!localLead) return;
     setSiteSaving(true);
@@ -230,6 +298,9 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
       }
       setSiteResultUrl(result.repoUrl ?? null);
       showToast({ icon: PartyPopper, text: "האתר נוצר!" });
+      if (result.deploymentId) {
+        startDeployPolling(localLead.id, result.deploymentId);
+      }
     } catch {
       setSiteError("שגיאה ביצירת האתר");
     } finally {
@@ -243,6 +314,9 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
     setSiteError(null);
     setSitePartialRepoUrl(null);
     setSiteResultUrl(null);
+    setSiteLiveUrl(null);
+    setSiteDeployStatus("idle");
+    stopDeployPolling();
   }
 
   const statusValue: KanbanStatus =
@@ -600,6 +674,35 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                     {siteResultUrl}
                   </a>
                 </p>
+
+                {siteDeployStatus === "deploying" && (
+                  <p className="mt-2 text-sm text-muted">⏳ האתר בתהליך פריסה ל-Vercel...</p>
+                )}
+
+                {siteDeployStatus === "ready" && siteLiveUrl && (
+                  <p className="mt-2 text-sm text-foreground">
+                    🚀 האתר באוויר:{" "}
+                    <a
+                      href={siteLiveUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono font-bold text-accent underline"
+                    >
+                      {siteLiveUrl}
+                    </a>
+                  </p>
+                )}
+
+                {siteDeployStatus === "timeout" && (
+                  <p className="mt-2 text-sm text-warn">
+                    הפריסה עדיין מתבצעת — בדוק שוב בעוד כמה דקות (אפשר גם ב-Vercel דשבורד).
+                  </p>
+                )}
+
+                {siteDeployStatus === "error" && siteError && (
+                  <p className="mt-2 text-sm text-warn">{siteError}</p>
+                )}
+
                 <div className="mt-5 flex justify-end">
                   <button type="button" onClick={closeSiteModal} className="btn-primary">
                     סגור

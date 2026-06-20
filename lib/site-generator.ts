@@ -184,3 +184,146 @@ export async function putRepoFile(
     }),
   });
 }
+
+const VERCEL_API = "https://api.vercel.com";
+const VERCEL_TEAM_ID = "team_iTMkW2op53QZywks7RYsa63k";
+
+export class VercelApiError extends Error {
+  constructor(message: string, public status: number) {
+    super(message);
+  }
+}
+
+/** Thrown by `waitForDeploymentReady` when the polling timeout elapses
+ *  without the deployment reaching `READY`. */
+export class DeploymentNotReadyError extends Error {
+  constructor(public deploymentId: string, public lastState?: string) {
+    super(`Deployment ${deploymentId} did not become ready before timeout (last state: ${lastState ?? "unknown"})`);
+  }
+}
+
+async function vercelRequest(path: string, init: RequestInit) {
+  const token = process.env.VERCEL_API_TOKEN;
+  if (!token) throw new VercelApiError("Missing VERCEL_API_TOKEN", 500);
+
+  const url = `${VERCEL_API}${path}${path.includes("?") ? "&" : "?"}teamId=${VERCEL_TEAM_ID}`;
+  const res = await fetch(url, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      ...(init.headers || {}),
+    },
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new VercelApiError(
+      body?.error?.message || `Vercel API error (HTTP ${res.status})`,
+      res.status
+    );
+  }
+  return res.json();
+}
+
+/** Step 3: create a Vercel project linked to the given GitHub repo. */
+export async function createVercelProject(repoName: string) {
+  return vercelRequest(`/v11/projects`, {
+    method: "POST",
+    body: JSON.stringify({
+      name: repoName,
+      gitRepository: { type: "github", repo: `${GITHUB_ORG}/${repoName}` },
+    }),
+  }) as Promise<{ id: string; name: string }>;
+}
+
+/** Step 4: explicitly trigger a production deployment from the repo's default branch. */
+export async function triggerDeployment(repoName: string) {
+  return vercelRequest(`/v13/deployments`, {
+    method: "POST",
+    body: JSON.stringify({
+      name: repoName,
+      project: repoName,
+      target: "production",
+      gitSource: { type: "github", org: GITHUB_ORG, repo: repoName, ref: "main" },
+    }),
+  }) as Promise<{ id: string; url: string; readyState: string }>;
+}
+
+export type DeploymentSnapshot = {
+  id: string;
+  url: string;
+  readyState: string;
+  alias?: string[];
+};
+
+/**
+ * Makes exactly ONE Vercel API call to read a deployment's current
+ * `readyState` — the single-check building block both the (now
+ * request-scoped) `GET .../deploy-status` route and `waitForDeploymentReady`
+ * are built on. Does no waiting/sleeping/looping of its own; callers decide
+ * whether and how to retry.
+ *
+ * Propagates `VercelApiError` immediately on `ERROR`/`CANCELED` readyState
+ * (these are terminal failures, not "not ready yet") or on any transport
+ * failure. Any other readyState (`QUEUED`, `BUILDING`, `INITIALIZING`, etc.)
+ * is returned as-is for the caller to interpret as "still in progress".
+ */
+export async function checkDeploymentStatus(deploymentId: string): Promise<DeploymentSnapshot> {
+  const deployment = (await vercelRequest(`/v13/deployments/${deploymentId}`, {
+    method: "GET",
+  })) as DeploymentSnapshot;
+
+  if (deployment.readyState === "ERROR" || deployment.readyState === "CANCELED") {
+    throw new VercelApiError(`Deployment ended in state ${deployment.readyState}`, 502);
+  }
+
+  return deployment;
+}
+
+/**
+ * Polls a deployment until `readyState` is `READY`, mirroring
+ * `waitForRepoReady`'s loop shape. Resolves with the final deployment
+ * payload (so the caller can read `.url` / `.alias` off it without an
+ * extra request). Rejects with `DeploymentNotReadyError` on timeout, or
+ * propagates `VercelApiError` immediately on `ERROR`/`CANCELED` states or
+ * transport failures.
+ *
+ * NOT used by the live `POST .../generate-site` request path anymore — a
+ * synchronous multi-minute poll inside a serverless function request is
+ * unsafe (see module docs / `.pipeline/changes.md` for the platform-timeout
+ * finding that motivated this). Kept exported for tests/tooling that still
+ * want a "wait until done" helper outside the request/response cycle (e.g.
+ * a future background job or CLI script), built on the same single-check
+ * `checkDeploymentStatus` the live status-polling route uses.
+ */
+export async function waitForDeploymentReady(
+  deploymentId: string,
+  options?: { timeoutMs?: number; intervalMs?: number }
+): Promise<DeploymentSnapshot> {
+  const timeoutMs = options?.timeoutMs ?? 180_000;
+  const intervalMs = options?.intervalMs ?? 3000;
+  const deadline = Date.now() + timeoutMs;
+  let lastState: string | undefined;
+
+  while (true) {
+    const deployment = await checkDeploymentStatus(deploymentId);
+
+    lastState = deployment.readyState;
+    if (deployment.readyState === "READY") return deployment;
+
+    if (Date.now() >= deadline) {
+      throw new DeploymentNotReadyError(deploymentId, lastState);
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+}
+
+/** Picks the clean production alias if Vercel assigned one, else the raw deployment URL. */
+export function resolveLiveUrl(deployment: { url: string; alias?: string[] }): string {
+  if (deployment.alias && deployment.alias.length > 0) {
+    return `https://${deployment.alias[0]}`;
+  }
+  return `https://${deployment.url}`;
+}

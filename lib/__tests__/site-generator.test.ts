@@ -8,6 +8,13 @@ import {
   waitForRepoReady,
   GitHubApiError,
   RepoNotReadyError,
+  createVercelProject,
+  triggerDeployment,
+  checkDeploymentStatus,
+  waitForDeploymentReady,
+  resolveLiveUrl,
+  VercelApiError,
+  DeploymentNotReadyError,
 } from "@/lib/site-generator";
 import type { LeadRecord } from "@/lib/types";
 
@@ -458,5 +465,379 @@ describe("route-level branching: RepoNotReadyError short-circuits before putRepo
     expect(result.status).toBe(502);
     expect(result.body).toHaveProperty("partialRepoUrl");
     expect(putRepoFileSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe("createVercelProject", () => {
+  const originalFetch = global.fetch;
+  const originalToken = process.env.VERCEL_API_TOKEN;
+
+  beforeEach(() => {
+    global.fetch = vi.fn();
+    process.env.VERCEL_API_TOKEN = "test-vercel-token";
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    process.env.VERCEL_API_TOKEN = originalToken;
+    vi.restoreAllMocks();
+  });
+
+  it("success: POSTs to /v11/projects with teamId query param and name/gitRepository body", async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: "prj_123", name: "pizza-place" }),
+    });
+
+    const result = await createVercelProject("pizza-place");
+
+    expect(result).toEqual({ id: "prj_123", name: "pizza-place" });
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    const [url, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(url).toBe(
+      "https://api.vercel.com/v11/projects?teamId=team_iTMkW2op53QZywks7RYsa63k"
+    );
+    expect(init.method).toBe("POST");
+    const body = JSON.parse(init.body as string);
+    expect(body).toEqual({
+      name: "pizza-place",
+      gitRepository: { type: "github", repo: "O-I-AI-soultions/pizza-place" },
+    });
+  });
+
+  it("missing token: throws VercelApiError(status 500) without calling fetch", async () => {
+    delete process.env.VERCEL_API_TOKEN;
+
+    await expect(createVercelProject("pizza-place")).rejects.toMatchObject({ status: 500 });
+    await expect(createVercelProject("pizza-place")).rejects.toBeInstanceOf(VercelApiError);
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+});
+
+describe("triggerDeployment", () => {
+  const originalFetch = global.fetch;
+  const originalToken = process.env.VERCEL_API_TOKEN;
+
+  beforeEach(() => {
+    global.fetch = vi.fn();
+    process.env.VERCEL_API_TOKEN = "test-vercel-token";
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    process.env.VERCEL_API_TOKEN = originalToken;
+    vi.restoreAllMocks();
+  });
+
+  it("success: POSTs to /v13/deployments with project, target production, gitSource", async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: "dpl_123", url: "pizza-place-abc.vercel.app", readyState: "QUEUED" }),
+    });
+
+    const result = await triggerDeployment("pizza-place");
+
+    expect(result).toEqual({
+      id: "dpl_123",
+      url: "pizza-place-abc.vercel.app",
+      readyState: "QUEUED",
+    });
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    const [url, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(url).toBe(
+      "https://api.vercel.com/v13/deployments?teamId=team_iTMkW2op53QZywks7RYsa63k"
+    );
+    expect(init.method).toBe("POST");
+    const body = JSON.parse(init.body as string);
+    expect(body).toEqual({
+      name: "pizza-place",
+      project: "pizza-place",
+      target: "production",
+      gitSource: { type: "github", org: "O-I-AI-soultions", repo: "pizza-place", ref: "main" },
+    });
+  });
+
+  it("failure (400): throws VercelApiError with matching status", async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: async () => ({ error: { message: "Bad ref" } }),
+    });
+
+    await expect(triggerDeployment("pizza-place")).rejects.toMatchObject({ status: 400 });
+    await expect(triggerDeployment("pizza-place")).rejects.toBeInstanceOf(VercelApiError);
+  });
+});
+
+describe("checkDeploymentStatus", () => {
+  const DEPLOYMENT_ID = "dpl_abc123";
+  const originalToken = process.env.VERCEL_API_TOKEN;
+
+  function jsonResponse(ok: boolean, status: number, body: unknown) {
+    return {
+      ok,
+      status,
+      json: async () => body,
+    };
+  }
+
+  beforeEach(() => {
+    process.env.VERCEL_API_TOKEN = "test-vercel-token";
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    process.env.VERCEL_API_TOKEN = originalToken;
+    vi.restoreAllMocks();
+  });
+
+  it("makes exactly one GET call and returns the snapshot when readyState is BUILDING", async () => {
+    const payload = { id: DEPLOYMENT_ID, url: "x.vercel.app", readyState: "BUILDING" };
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(true, 200, payload));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await checkDeploymentStatus(DEPLOYMENT_ID);
+
+    expect(result).toEqual(payload);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe(
+      `https://api.vercel.com/v13/deployments/${DEPLOYMENT_ID}?teamId=team_iTMkW2op53QZywks7RYsa63k`
+    );
+    expect(init.method).toBe("GET");
+  });
+
+  it("makes exactly one GET call and returns the snapshot when readyState is READY", async () => {
+    const payload = { id: DEPLOYMENT_ID, url: "x.vercel.app", readyState: "READY", alias: ["x.vercel.app"] };
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(true, 200, payload));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await checkDeploymentStatus(DEPLOYMENT_ID);
+
+    expect(result).toEqual(payload);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("throws VercelApiError immediately on ERROR readyState, with exactly one call", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(jsonResponse(true, 200, { id: DEPLOYMENT_ID, url: "x.vercel.app", readyState: "ERROR" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(checkDeploymentStatus(DEPLOYMENT_ID)).rejects.toBeInstanceOf(VercelApiError);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("throws VercelApiError immediately on CANCELED readyState, with exactly one call", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(jsonResponse(true, 200, { id: DEPLOYMENT_ID, url: "x.vercel.app", readyState: "CANCELED" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(checkDeploymentStatus(DEPLOYMENT_ID)).rejects.toBeInstanceOf(VercelApiError);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("does no internal waiting/looping — never calls setTimeout-based retry, just propagates transport failure", async () => {
+    delete process.env.VERCEL_API_TOKEN;
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(checkDeploymentStatus(DEPLOYMENT_ID)).rejects.toBeInstanceOf(VercelApiError);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("waitForDeploymentReady", () => {
+  const DEPLOYMENT_ID = "dpl_abc123";
+  const originalToken = process.env.VERCEL_API_TOKEN;
+
+  function jsonResponse(ok: boolean, status: number, body: unknown) {
+    return {
+      ok,
+      status,
+      json: async () => body,
+    };
+  }
+
+  beforeEach(() => {
+    process.env.VERCEL_API_TOKEN = "test-vercel-token";
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    process.env.VERCEL_API_TOKEN = originalToken;
+    vi.restoreAllMocks();
+  });
+
+  it("ready immediately: resolves after exactly one fetch call when readyState is READY on first poll", async () => {
+    const payload = { id: DEPLOYMENT_ID, url: "pizza-place-abc.vercel.app", readyState: "READY" };
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(true, 200, payload));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await waitForDeploymentReady(DEPLOYMENT_ID);
+
+    expect(result).toEqual(payload);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe(
+      `https://api.vercel.com/v13/deployments/${DEPLOYMENT_ID}?teamId=team_iTMkW2op53QZywks7RYsa63k`
+    );
+    expect(init.method).toBe("GET");
+  });
+
+  it("ready after retries: QUEUED -> BUILDING -> READY resolves after 3 calls", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse(true, 200, { id: DEPLOYMENT_ID, url: "x.vercel.app", readyState: "QUEUED" })
+      )
+      .mockResolvedValueOnce(
+        jsonResponse(true, 200, { id: DEPLOYMENT_ID, url: "x.vercel.app", readyState: "BUILDING" })
+      )
+      .mockResolvedValueOnce(
+        jsonResponse(true, 200, { id: DEPLOYMENT_ID, url: "x.vercel.app", readyState: "READY" })
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await waitForDeploymentReady(DEPLOYMENT_ID, { intervalMs: 10, timeoutMs: 5000 });
+
+    expect(result.readyState).toBe("READY");
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it("timeout: only BUILDING responses rejects with DeploymentNotReadyError with deploymentId/lastState set", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        jsonResponse(true, 200, { id: DEPLOYMENT_ID, url: "x.vercel.app", readyState: "BUILDING" })
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const error = await waitForDeploymentReady(DEPLOYMENT_ID, {
+      intervalMs: 10,
+      timeoutMs: 50,
+    }).catch((e) => e);
+
+    expect(error).toBeInstanceOf(DeploymentNotReadyError);
+    expect((error as DeploymentNotReadyError).deploymentId).toBe(DEPLOYMENT_ID);
+    expect((error as DeploymentNotReadyError).lastState).toBe("BUILDING");
+  });
+
+  it("error state: readyState ERROR rejects immediately with VercelApiError without exhausting the timeout", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        jsonResponse(true, 200, { id: DEPLOYMENT_ID, url: "x.vercel.app", readyState: "ERROR" })
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      waitForDeploymentReady(DEPLOYMENT_ID, { intervalMs: 10, timeoutMs: 5000 })
+    ).rejects.toBeInstanceOf(VercelApiError);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("canceled state: readyState CANCELED rejects immediately with VercelApiError without exhausting the timeout", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        jsonResponse(true, 200, { id: DEPLOYMENT_ID, url: "x.vercel.app", readyState: "CANCELED" })
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      waitForDeploymentReady(DEPLOYMENT_ID, { intervalMs: 10, timeoutMs: 5000 })
+    ).rejects.toBeInstanceOf(VercelApiError);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("resolveLiveUrl", () => {
+  it("returns https://{alias[0]} when alias array is non-empty", () => {
+    const result = resolveLiveUrl({
+      url: "pizza-place-abc123.vercel.app",
+      alias: ["pizza-place.vercel.app", "pizza-place-other.vercel.app"],
+    });
+    expect(result).toBe("https://pizza-place.vercel.app");
+  });
+
+  it("returns https://{url} when alias is absent", () => {
+    const result = resolveLiveUrl({ url: "pizza-place-abc123.vercel.app" });
+    expect(result).toBe("https://pizza-place-abc123.vercel.app");
+  });
+
+  it("returns https://{url} when alias is an empty array", () => {
+    const result = resolveLiveUrl({ url: "pizza-place-abc123.vercel.app", alias: [] });
+    expect(result).toBe("https://pizza-place-abc123.vercel.app");
+  });
+});
+
+describe("route-level branching: Vercel deploy trigger failure does not roll back the GitHub repo", () => {
+  // No precedent in this repo for invoking Next.js route handlers directly
+  // (see the RepoNotReadyError describe block above) — this scopes coverage
+  // to the contract the route's new try/catch block depends on. Per the
+  // redesign (see .pipeline/changes.md — reviewer flagged the old
+  // synchronous waitForDeploymentReady poll as unsafe inside a serverless
+  // request), the route now only triggers the deployment and returns
+  // immediately: success yields deploymentId + status "deploying" (no
+  // liveUrl yet, that's resolved later by the client polling
+  // deploy-status); a triggerDeployment failure yields deployError, and
+  // never attempts any rollback call against the GitHub repo.
+  const REPO_HTML_URL = "https://github.com/O-I-AI-soultions/pizza-place";
+  const REPO_FULL_NAME = "O-I-AI-soultions/pizza-place";
+
+  async function simulateRouteFlow(deployTriggerSucceeds: boolean) {
+    const repo = { html_url: REPO_HTML_URL, full_name: REPO_FULL_NAME };
+    let deploymentId: string | undefined;
+    let deployError: string | undefined;
+
+    try {
+      if (!deployTriggerSucceeds) {
+        throw new VercelApiError("Vercel project name collision", 409);
+      }
+      deploymentId = "dpl_abc123";
+    } catch (err) {
+      deployError =
+        err instanceof VercelApiError ? `Vercel API error: ${err.message}` : "Failed to deploy site to Vercel";
+    }
+
+    return {
+      status: 200,
+      body: {
+        ok: true,
+        repoUrl: repo.html_url,
+        repoFullName: repo.full_name,
+        ...(deploymentId ? { deploymentId, status: "deploying" as const } : { deployError }),
+      },
+    };
+  }
+
+  it("deploy trigger failure: returns 200 with repoUrl/repoFullName/deployError, no deploymentId, no rollback", async () => {
+    const result = await simulateRouteFlow(false);
+
+    expect(result.status).toBe(200);
+    expect(result.body).toMatchObject({
+      ok: true,
+      repoUrl: REPO_HTML_URL,
+      repoFullName: REPO_FULL_NAME,
+    });
+    expect(result.body).not.toHaveProperty("deploymentId");
+    expect(result.body).toHaveProperty("deployError");
+  });
+
+  it("deploy trigger success: returns 200 with repoUrl/repoFullName/deploymentId/status deploying, no deployError, no liveUrl yet", async () => {
+    const result = await simulateRouteFlow(true);
+
+    expect(result.status).toBe(200);
+    expect(result.body).toMatchObject({
+      ok: true,
+      repoUrl: REPO_HTML_URL,
+      repoFullName: REPO_FULL_NAME,
+      deploymentId: "dpl_abc123",
+      status: "deploying",
+    });
+    expect(result.body).not.toHaveProperty("deployError");
+    expect(result.body).not.toHaveProperty("liveUrl");
   });
 });

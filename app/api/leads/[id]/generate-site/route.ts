@@ -4,10 +4,13 @@ import {
   buildClientJsContent,
   buildSiteGenerationPlan,
   createRepoFromTemplate,
+  createVercelProject,
   GitHubApiError,
   putRepoFile,
   RepoNotReadyError,
   SITE_CATEGORIES,
+  triggerDeployment,
+  VercelApiError,
   waitForRepoReady,
   type SiteCategory,
 } from "@/lib/site-generator";
@@ -115,17 +118,61 @@ export async function POST(
     );
   }
 
+  // Best-effort: trigger a Vercel deployment for the new repo. The repo +
+  // committed data are already a complete, valid success on their own (the
+  // primary operation), so a Vercel failure here degrades the response — it
+  // does not fail the request or roll back the already-created GitHub repo.
+  //
+  // Deliberately does NOT wait for the deployment to finish: a real
+  // `template-booking` build can take close to the full 180s polling budget
+  // `waitForDeploymentReady` used to use, and a serverless function request
+  // can be killed by the platform well before that (default Vercel function
+  // timeouts are far shorter, and even a configured `maxDuration` isn't
+  // guaranteed to cover a slow build on every plan). Polling synchronously
+  // here risked turning the route's carefully-designed "always returns a
+  // graceful response" guarantee into a raw 504 on exactly the build that
+  // most needed it. Instead: trigger the deployment, return immediately with
+  // its id/"deploying" status, and let the client poll
+  // `GET .../deploy-status` (a single fast Vercel API call per request) —
+  // see `.pipeline/changes.md` for the full reviewer finding and rationale.
+  let deploymentId: string | undefined;
+  let deployError: string | undefined;
+
+  try {
+    await createVercelProject(repo.full_name.split("/")[1]); // repoName, not full_name
+    const deployment = await triggerDeployment(repoName); // use the same repoName from buildSiteGenerationPlan
+    deploymentId = deployment.id;
+  } catch (err) {
+    deployError =
+      err instanceof VercelApiError ? `Vercel API error: ${err.message}` : "Failed to deploy site to Vercel";
+    console.error("generate-site: Vercel deploy trigger failed", err);
+  }
+
   // Best-effort: write a note back to the lead's Airtable record. The repo
   // was already created and configured successfully — that's the
   // operation's primary success criterion — so a failure here is logged
   // and otherwise ignored, mirroring convertLeadToClient's pattern of
   // treating the Airtable side-effect as best-effort once the "real"
   // external action succeeded.
+  //
+  // Known limitation (v1, see .pipeline/changes.md): the live URL isn't
+  // known yet at this point — the deployment was only just triggered, not
+  // awaited — so the note records the repo URL only. The live URL is never
+  // back-filled into Airtable once the client-side poll resolves it; a
+  // partner who wants it in Airtable needs to copy it in manually from the
+  // UI or the Vercel dashboard.
   const existingNotes = lead.notes ? `${lead.notes}\n\n` : "";
   const stamp = new Date().toLocaleDateString("he-IL");
   await updateLeadFields(id, {
     Notes: `${existingNotes}[${stamp}] אתר נוצר: ${repo.html_url}`,
   }).catch((err) => console.error("generate-site: failed to write note", err));
 
-  return Response.json({ ok: true, repoUrl: repo.html_url, repoFullName: repo.full_name });
+  return Response.json({
+    ok: true,
+    repoUrl: repo.html_url,
+    repoFullName: repo.full_name,
+    ...(deploymentId
+      ? { deploymentId, status: "deploying" as const }
+      : { deployError }),
+  });
 }
