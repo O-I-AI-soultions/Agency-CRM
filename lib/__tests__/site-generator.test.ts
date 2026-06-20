@@ -5,7 +5,9 @@ import {
   buildClientJsContent,
   createRepoFromTemplate,
   putRepoFile,
+  waitForRepoReady,
   GitHubApiError,
+  RepoNotReadyError,
 } from "@/lib/site-generator";
 import type { LeadRecord } from "@/lib/types";
 
@@ -320,5 +322,141 @@ describe("putRepoFile", () => {
       putRepoFile("O-I-AI-soultions/pizza-place", "client.json", "{}", "msg")
     ).rejects.toMatchObject({ status: 500 });
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("waitForRepoReady", () => {
+  const REPO_FULL_NAME = "O-I-AI-soultions/MB-barbershop";
+  const originalToken = process.env.GITHUB_API_TOKEN;
+
+  function jsonResponse(status: number, body: unknown = {}) {
+    return {
+      ok: status >= 200 && status < 300,
+      status,
+      headers: new Headers(),
+      json: async () => body,
+    };
+  }
+
+  beforeEach(() => {
+    process.env.GITHUB_API_TOKEN = "test-token";
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    process.env.GITHUB_API_TOKEN = originalToken;
+    vi.restoreAllMocks();
+  });
+
+  it("ready immediately: resolves after exactly one fetch call when client.json is already 200", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, { sha: "abc" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(waitForRepoReady(REPO_FULL_NAME)).resolves.toBeUndefined();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe(
+      `https://api.github.com/repos/${REPO_FULL_NAME}/contents/client.json`
+    );
+    expect(init.method).toBe("GET");
+  });
+
+  it("ready after retries: resolves once a later call returns 200, after the expected number of fetch calls", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(404, { message: "Not Found" }))
+      .mockResolvedValueOnce(jsonResponse(404, { message: "Not Found" }))
+      .mockResolvedValueOnce(jsonResponse(200, { sha: "abc" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      waitForRepoReady(REPO_FULL_NAME, { intervalMs: 10, timeoutMs: 5000 })
+    ).resolves.toBeUndefined();
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it("timeout: rejects with RepoNotReadyError once timeoutMs elapses with only 404 responses", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(404, { message: "Not Found" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const error = await waitForRepoReady(REPO_FULL_NAME, {
+      intervalMs: 10,
+      timeoutMs: 50,
+    }).catch((e) => e);
+
+    expect(error).toBeInstanceOf(RepoNotReadyError);
+    expect((error as RepoNotReadyError).repoFullName).toBe(REPO_FULL_NAME);
+  });
+
+  it("propagates non-404 errors (e.g. rate limit) immediately, without exhausting the timeout", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse(403, { message: "rate limited" })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      waitForRepoReady(REPO_FULL_NAME, { intervalMs: 10, timeoutMs: 5000 })
+    ).rejects.toBeInstanceOf(GitHubApiError);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("route-level branching: RepoNotReadyError short-circuits before putRepoFile", () => {
+  // No precedent in this repo for invoking Next.js route handlers directly
+  // in lib/__tests__ (no existing app/**/route.test.ts), so per the spec's
+  // fallback this scopes coverage to the contract the route's new catch
+  // branch depends on: when waitForRepoReady rejects with
+  // RepoNotReadyError, a caller following the route's try/catch/return
+  // pattern (see app/api/leads/[id]/generate-site/route.ts) never reaches
+  // putRepoFile, and surfaces a 502 with partialRepoUrl set.
+  const REPO_FULL_NAME = "O-I-AI-soultions/MB-barbershop";
+  const originalToken = process.env.GITHUB_API_TOKEN;
+
+  beforeEach(() => {
+    process.env.GITHUB_API_TOKEN = "test-token";
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    process.env.GITHUB_API_TOKEN = originalToken;
+    vi.restoreAllMocks();
+  });
+
+  it("never calls putRepoFile and returns 502 + partialRepoUrl when waitForRepoReady throws RepoNotReadyError", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+      headers: new Headers(),
+      json: async () => ({ message: "Not Found" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const putRepoFileSpy = vi.fn(putRepoFile);
+
+    async function simulateRouteFlow() {
+      try {
+        await waitForRepoReady(REPO_FULL_NAME, { intervalMs: 10, timeoutMs: 30 });
+      } catch (err) {
+        if (err instanceof RepoNotReadyError) {
+          return {
+            status: 502,
+            body: {
+              error: "הריפו נוצר אך עדיין לא מוכן לכתיבה, נסה שוב בעוד כמה רגעים",
+              partialRepoUrl: `https://github.com/${REPO_FULL_NAME}`,
+            },
+          };
+        }
+        throw err;
+      }
+      await putRepoFileSpy(REPO_FULL_NAME, "client.json", "{}", "msg");
+      return { status: 200, body: { ok: true } };
+    }
+
+    const result = await simulateRouteFlow();
+
+    expect(result.status).toBe(502);
+    expect(result.body).toHaveProperty("partialRepoUrl");
+    expect(putRepoFileSpy).not.toHaveBeenCalled();
   });
 });

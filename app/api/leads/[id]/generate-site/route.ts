@@ -6,7 +6,9 @@ import {
   createRepoFromTemplate,
   GitHubApiError,
   putRepoFile,
+  RepoNotReadyError,
   SITE_CATEGORIES,
+  waitForRepoReady,
   type SiteCategory,
 } from "@/lib/site-generator";
 
@@ -69,6 +71,23 @@ export async function POST(
       );
     }
     return Response.json({ error: "Failed to generate site" }, { status: 500 });
+  }
+
+  try {
+    await waitForRepoReady(repo.full_name);
+  } catch (err) {
+    if (err instanceof RepoNotReadyError) {
+      return Response.json(
+        {
+          error: "הריפו נוצר אך עדיין לא מוכן לכתיבה, נסה שוב בעוד כמה רגעים",
+          partialRepoUrl: repo.html_url,
+        },
+        { status: 502 }
+      );
+    }
+    const message =
+      err instanceof GitHubApiError ? `GitHub API error: ${err.message}` : "Failed to generate site";
+    return Response.json({ error: message, partialRepoUrl: repo.html_url }, { status: 502 });
   }
 
   try {

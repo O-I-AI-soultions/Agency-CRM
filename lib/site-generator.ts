@@ -62,6 +62,16 @@ export class GitHubApiError extends Error {
   }
 }
 
+/**
+ * Thrown by `waitForRepoReady` when the polling timeout elapses without the
+ * repo's template files (specifically client.json) becoming available.
+ */
+export class RepoNotReadyError extends Error {
+  constructor(public repoFullName: string) {
+    super(`Repo ${repoFullName} did not become ready before timeout`);
+  }
+}
+
 async function githubRequest(path: string, init: RequestInit) {
   const token = process.env.GITHUB_API_TOKEN;
   if (!token) throw new GitHubApiError("Missing GITHUB_API_TOKEN", 500);
@@ -101,6 +111,46 @@ export async function createRepoFromTemplate(templateRepo: string, repoName: str
       include_all_branches: false,
     }),
   }) as Promise<{ html_url: string; full_name: string }>;
+}
+
+/**
+ * Polls a newly-generated repo until its template files have actually
+ * landed, using `GET /repos/{repoFullName}/contents/client.json` as the
+ * readiness signal (see module docs above for the race this guards against).
+ *
+ * - 200 -> ready, resolves immediately (first check happens with no upfront
+ *   sleep, so the already-ready case costs exactly one request).
+ * - 404 (`GitHubApiError` with status 404) -> not ready yet, wait
+ *   `intervalMs` and retry.
+ * - Any other error propagates immediately (rate limit, 5xx, missing token,
+ *   etc.) — it is not swallowed into the timeout.
+ * - If `timeoutMs` elapses without a 200, rejects with `RepoNotReadyError`.
+ */
+export async function waitForRepoReady(
+  repoFullName: string,
+  options?: { timeoutMs?: number; intervalMs?: number }
+): Promise<void> {
+  const timeoutMs = options?.timeoutMs ?? 20000;
+  const intervalMs = options?.intervalMs ?? 1500;
+  const deadline = Date.now() + timeoutMs;
+
+  while (true) {
+    try {
+      await githubRequest(`/repos/${repoFullName}/contents/client.json`, {
+        method: "GET",
+      });
+      return;
+    } catch (err) {
+      if (!(err instanceof GitHubApiError) || err.status !== 404) throw err;
+      // Not ready yet — fall through to the timeout/retry check below.
+    }
+
+    if (Date.now() >= deadline) {
+      throw new RepoNotReadyError(repoFullName);
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
 }
 
 /** Step 2: commit (create or update) a file's content via Contents API. */
