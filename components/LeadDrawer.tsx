@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Phone, MessageCircle, MapPin, Star, Check, PartyPopper, AlertTriangle } from "lucide-react";
+import { X, Phone, MessageCircle, MapPin, Star, Check, PartyPopper, AlertTriangle, Globe } from "lucide-react";
 import { KANBAN_STATUSES, type KanbanStatus, type LeadRecord } from "@/lib/types";
 import type { Partner } from "@/lib/auth";
 import PriorityBadge from "@/components/PriorityBadge";
 import { toWhatsAppNumber, buildWhatsAppMessage } from "@/lib/whatsapp";
+import { generateSiteClient, type SiteCategory } from "@/lib/leads-client";
 
 const STATUS_LABELS: Record<KanbanStatus, string> = {
   "New Lead": "לידים חדשים",
@@ -66,6 +67,12 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
   const [setupFee, setSetupFee] = useState("");
   const [monthlyRetainer, setMonthlyRetainer] = useState("");
   const [convertSaving, setConvertSaving] = useState(false);
+  const [showSiteModal, setShowSiteModal] = useState(false);
+  const [siteCategory, setSiteCategory] = useState<SiteCategory>("landing");
+  const [siteSaving, setSiteSaving] = useState(false);
+  const [siteError, setSiteError] = useState<string | null>(null);
+  const [sitePartialRepoUrl, setSitePartialRepoUrl] = useState<string | null>(null);
+  const [siteResultUrl, setSiteResultUrl] = useState<string | null>(null);
 
   const isOpen = lead !== null;
 
@@ -76,6 +83,12 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
     setShowConvertModal(false);
     setSetupFee("");
     setMonthlyRetainer("");
+    setShowSiteModal(false);
+    setSiteCategory("landing");
+    setSiteSaving(false);
+    setSiteError(null);
+    setSitePartialRepoUrl(null);
+    setSiteResultUrl(null);
   }
 
   useEffect(() => {
@@ -201,6 +214,35 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
     } finally {
       setConvertSaving(false);
     }
+  }
+
+  async function handleGenerateSiteConfirm() {
+    if (!localLead) return;
+    setSiteSaving(true);
+    setSiteError(null);
+    setSitePartialRepoUrl(null);
+    try {
+      const result = await generateSiteClient(localLead.id, siteCategory);
+      if (!result.ok) {
+        setSiteError(result.error ?? "שגיאה ביצירת האתר");
+        setSitePartialRepoUrl(result.partialRepoUrl ?? null);
+        return;
+      }
+      setSiteResultUrl(result.repoUrl ?? null);
+      showToast({ icon: PartyPopper, text: "האתר נוצר!" });
+    } catch {
+      setSiteError("שגיאה ביצירת האתר");
+    } finally {
+      setSiteSaving(false);
+    }
+  }
+
+  function closeSiteModal() {
+    setShowSiteModal(false);
+    setSiteCategory("landing");
+    setSiteError(null);
+    setSitePartialRepoUrl(null);
+    setSiteResultUrl(null);
   }
 
   const statusValue: KanbanStatus =
@@ -442,15 +484,26 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
               </div>
             )}
 
-            {showConvert && (
-              <div className="sticky bottom-0 border-t border-border bg-surface p-4">
-                <button
-                  type="button"
-                  onClick={() => setShowConvertModal(true)}
-                  className="btn-primary w-full"
-                >
-                  <Check size={16} /> המר ללקוח
-                </button>
+            {(showConvert || localLead.businessName) && (
+              <div className="sticky bottom-0 flex gap-2 border-t border-border bg-surface p-4">
+                {showConvert && (
+                  <button
+                    type="button"
+                    onClick={() => setShowConvertModal(true)}
+                    className="btn-primary flex-1"
+                  >
+                    <Check size={16} /> המר ללקוח
+                  </button>
+                )}
+                {localLead.businessName && (
+                  <button
+                    type="button"
+                    onClick={() => setShowSiteModal(true)}
+                    className="btn-outline flex-1"
+                  >
+                    <Globe size={16} /> צור אתר ללקוח
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -518,6 +571,115 @@ export default function LeadDrawer({ lead, partner, onClose, onUpdate }: LeadDra
                 <Check size={16} /> {convertSaving ? "שומר..." : "אשר"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showSiteModal && localLead && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="site-modal-title"
+            className="panel w-full max-w-sm p-5 shadow-xl"
+          >
+            <h3 id="site-modal-title" className="mb-4 text-lg font-black text-foreground">
+              יצירת אתר מהליד
+            </h3>
+
+            {siteResultUrl ? (
+              <>
+                <p className="text-sm text-foreground">
+                  ✅ נוצר:{" "}
+                  <a
+                    href={siteResultUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-accent underline"
+                  >
+                    {siteResultUrl}
+                  </a>
+                </p>
+                <div className="mt-5 flex justify-end">
+                  <button type="button" onClick={closeSiteModal} className="btn-primary">
+                    סגור
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    {(
+                      [
+                        { value: "landing", label: "דף נחיתה" },
+                        { value: "booking", label: "הזמנת תורים" },
+                        { value: "payments", label: "תשלומים" },
+                      ] as const
+                    ).map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setSiteCategory(option.value)}
+                        disabled={siteSaving}
+                        aria-pressed={siteCategory === option.value}
+                        className={`flex-1 rounded-lg border px-3 py-2 text-sm font-bold transition-colors disabled:opacity-50 ${
+                          siteCategory === option.value
+                            ? "border-accent bg-accent-soft text-accent"
+                            : "border-border bg-surface-2 text-foreground hover:border-accent"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                  {(siteCategory === "booking" || siteCategory === "payments") && (
+                    <p className="text-xs text-muted">
+                      ⚠ אתרי הזמנת תורים/תשלומים חדשים יותר וייתכן שיידרש תיקון ידני
+                      אחרי היצירה.
+                    </p>
+                  )}
+                  {siteError && (
+                    <p className="text-sm text-warn">
+                      {siteError}
+                      {sitePartialRepoUrl && (
+                        <>
+                          {" "}
+                          הריפו נוצר אך שמירת הקבצים נכשלה — סיימו ידנית ב-
+                          <a
+                            href={sitePartialRepoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-mono text-accent underline"
+                          >
+                            {sitePartialRepoUrl}
+                          </a>
+                          .
+                        </>
+                      )}
+                    </p>
+                  )}
+                </div>
+                <div className="mt-5 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={closeSiteModal}
+                    disabled={siteSaving}
+                    className="btn-outline disabled:opacity-50"
+                  >
+                    ביטול
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleGenerateSiteConfirm}
+                    disabled={siteSaving}
+                    className="btn-primary disabled:opacity-50"
+                  >
+                    <Check size={16} /> {siteSaving ? "שומר..." : "אשר"}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

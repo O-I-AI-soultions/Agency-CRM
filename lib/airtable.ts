@@ -96,6 +96,11 @@ export async function listLeads(): Promise<LeadRecord[]> {
   return records.map(mapLeadRecord);
 }
 
+export async function getLead(recordId: string): Promise<LeadRecord> {
+  const record = await base(LEAD_TRACKER_TABLE).find(recordId);
+  return mapLeadRecord(record);
+}
+
 export async function updateLeadStatus(
   recordId: string,
   status: KanbanStatus

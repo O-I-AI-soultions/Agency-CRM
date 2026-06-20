@@ -36,3 +36,42 @@ export async function deleteLeadClient(leadId: string): Promise<boolean> {
     return false;
   }
 }
+
+export type SiteCategory = "landing" | "booking" | "payments";
+
+export interface GenerateSiteResult {
+  ok: boolean;
+  repoUrl?: string;
+  error?: string;
+  partialRepoUrl?: string;
+}
+
+/**
+ * Client-side helper for `POST /api/leads/[id]/generate-site`. Mirrors
+ * `updateLeadStatusClient`'s try/catch + fallback-error-string shape so
+ * `LeadDrawer.tsx`'s "create site" modal can call this instead of `fetch`
+ * inline, for testability.
+ */
+export async function generateSiteClient(
+  leadId: string,
+  category: SiteCategory
+): Promise<GenerateSiteResult> {
+  try {
+    const res = await fetch(`/api/leads/${leadId}/generate-site`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ category }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      return {
+        ok: false,
+        error: typeof body?.error === "string" ? body.error : "שגיאה ביצירת האתר",
+        partialRepoUrl: typeof body?.partialRepoUrl === "string" ? body.partialRepoUrl : undefined,
+      };
+    }
+    return { ok: true, repoUrl: body?.repoUrl };
+  } catch {
+    return { ok: false, error: "שגיאה ביצירת האתר" };
+  }
+}
