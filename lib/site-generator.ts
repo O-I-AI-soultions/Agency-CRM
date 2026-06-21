@@ -188,6 +188,23 @@ export async function putRepoFile(
 const VERCEL_API = "https://api.vercel.com";
 const VERCEL_TEAM_ID = "team_iTMkW2op53QZywks7RYsa63k";
 
+/**
+ * Vercel project names must be lowercase with no consecutive hyphens, unlike
+ * GitHub repo names (which `slugify()` targets and happily produces things
+ * like "Elis-Barber--Shop" for "Eli's Barber & Shop"). Passing that straight
+ * through as a Vercel project `name` fails Vercel's validation — confirmed
+ * live in production (createVercelProject silently failed, no project was
+ * ever created). The GitHub repo reference itself must keep its original
+ * case (it's a real repo name), so this only touches the Vercel-facing name.
+ */
+export function toVercelProjectName(repoName: string): string {
+  const name = repoName
+    .toLowerCase()
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return name || "client";
+}
+
 export class VercelApiError extends Error {
   constructor(message: string, public status: number) {
     super(message);
@@ -231,7 +248,7 @@ export async function createVercelProject(repoName: string) {
   return vercelRequest(`/v11/projects`, {
     method: "POST",
     body: JSON.stringify({
-      name: repoName,
+      name: toVercelProjectName(repoName),
       gitRepository: { type: "github", repo: `${GITHUB_ORG}/${repoName}` },
     }),
   }) as Promise<{ id: string; name: string }>;
@@ -239,11 +256,12 @@ export async function createVercelProject(repoName: string) {
 
 /** Step 4: explicitly trigger a production deployment from the repo's default branch. */
 export async function triggerDeployment(repoName: string) {
+  const vercelProjectName = toVercelProjectName(repoName);
   return vercelRequest(`/v13/deployments`, {
     method: "POST",
     body: JSON.stringify({
-      name: repoName,
-      project: repoName,
+      name: vercelProjectName,
+      project: vercelProjectName,
       target: "production",
       gitSource: { type: "github", org: GITHUB_ORG, repo: repoName, ref: "main" },
     }),

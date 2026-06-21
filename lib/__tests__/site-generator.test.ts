@@ -10,6 +10,7 @@ import {
   RepoNotReadyError,
   createVercelProject,
   triggerDeployment,
+  toVercelProjectName,
   checkDeploymentStatus,
   waitForDeploymentReady,
   resolveLiveUrl,
@@ -468,6 +469,26 @@ describe("route-level branching: RepoNotReadyError short-circuits before putRepo
   });
 });
 
+describe("toVercelProjectName", () => {
+  it("lowercases and collapses consecutive hyphens from a slugify()-style repo name", () => {
+    // Real production case: slugify("Eli's Barber & Shop") -> "Elis-Barber--Shop",
+    // which Vercel's project-name validation rejects (uppercase + double hyphen).
+    expect(toVercelProjectName("Elis-Barber--Shop")).toBe("elis-barber-shop");
+  });
+
+  it("trims leading/trailing hyphens left over after collapsing", () => {
+    expect(toVercelProjectName("-Foo--Bar-")).toBe("foo-bar");
+  });
+
+  it("falls back to 'client' if sanitization empties the string", () => {
+    expect(toVercelProjectName("---")).toBe("client");
+  });
+
+  it("leaves an already-clean name unchanged", () => {
+    expect(toVercelProjectName("pizza-place")).toBe("pizza-place");
+  });
+});
+
 describe("createVercelProject", () => {
   const originalFetch = global.fetch;
   const originalToken = process.env.VERCEL_API_TOKEN;
@@ -511,6 +532,22 @@ describe("createVercelProject", () => {
     await expect(createVercelProject("pizza-place")).rejects.toMatchObject({ status: 500 });
     await expect(createVercelProject("pizza-place")).rejects.toBeInstanceOf(VercelApiError);
     expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("sanitizes the Vercel project `name` but keeps the real GitHub repo name in gitRepository.repo", async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: "prj_123", name: "elis-barber-shop" }),
+    });
+
+    await createVercelProject("Elis-Barber--Shop");
+
+    const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    const body = JSON.parse(init.body as string);
+    expect(body).toEqual({
+      name: "elis-barber-shop",
+      gitRepository: { type: "github", repo: "O-I-AI-soultions/Elis-Barber--Shop" },
+    });
   });
 });
 
@@ -566,6 +603,24 @@ describe("triggerDeployment", () => {
 
     await expect(triggerDeployment("pizza-place")).rejects.toMatchObject({ status: 400 });
     await expect(triggerDeployment("pizza-place")).rejects.toBeInstanceOf(VercelApiError);
+  });
+
+  it("sanitizes name/project for Vercel but keeps the real GitHub repo name in gitSource.repo", async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: "dpl_123", url: "elis-barber-shop-abc.vercel.app", readyState: "QUEUED" }),
+    });
+
+    await triggerDeployment("Elis-Barber--Shop");
+
+    const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    const body = JSON.parse(init.body as string);
+    expect(body).toEqual({
+      name: "elis-barber-shop",
+      project: "elis-barber-shop",
+      target: "production",
+      gitSource: { type: "github", org: "O-I-AI-soultions", repo: "Elis-Barber--Shop", ref: "main" },
+    });
   });
 });
 
