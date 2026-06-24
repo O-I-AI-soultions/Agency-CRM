@@ -304,3 +304,7 @@ Run from `C:\Users\itays\Dropbox\איתי\O-I\Agency-CRM`:
 
 - **`npm run lint`** — ✅ Passes. 1 pre-existing warning (not introduced by this review): `react-hooks/exhaustive-deps` in `components/TaskDrawer.tsx:91` (see "Pre-existing, Verified-OK" above).
 - **`npm run build`** — ✅ Passes. Next.js 16.2.9 (Turbopack) production build compiles successfully, TypeScript checks pass, all 14 routes (including `/`, `/clients`, `/leads`, `/tasks`, `/settings`, `/login`, and all `/api/*` routes) build successfully.
+
+## Task 4 note (backlog closeout run)
+
+PROJECT_LOG.md backfill for this session's commits (`881e0f7`..`334498c`) was committed in the parent O-I repo, not here — see `O-I/PROJECT_LOG.md` (commit `1e2c765`) for the dated entries. No Agency-CRM code changes were needed for this task.
