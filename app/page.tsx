@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getPartnerNote, listClients, listLeads, listTasks } from "@/lib/airtable";
+import { getPartnerNoteSafe, listClients, listLeads, listTasks } from "@/lib/airtable";
 import { getCurrentPartner } from "@/lib/auth-server";
 import UrgentLeadsCard from "@/components/dashboard/UrgentLeadsCard";
 import NotesPanel from "@/components/dashboard/NotesPanel";
@@ -18,7 +18,7 @@ export default async function DashboardPage() {
     listLeads(),
     listClients(),
     listTasks(),
-    getPartnerNote(partner),
+    getPartnerNoteSafe(partner),
   ]);
 
   return (
