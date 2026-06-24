@@ -1,28 +1,11 @@
-import { Flame, Circle, ArrowDown, ClipboardList, Users, MessageCircle } from "lucide-react";
-import type { Priority, TaskRecord, TaskStatus } from "@/lib/types";
+import { ClipboardList, Users, MessageCircle } from "lucide-react";
+import type { TaskRecord, TaskStatus } from "@/lib/types";
+import { PRIORITY_LABELS, PRIORITY_CLASSES, PRIORITY_ICONS } from "@/lib/priority-labels";
 
 export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
   "To Do": "לביצוע",
   "In Progress": "בתהליך",
   Done: "הושלם",
-};
-
-export const PRIORITY_LABELS: Record<Priority, string> = {
-  High: "גבוהה",
-  Medium: "בינונית",
-  Low: "נמוכה",
-};
-
-const PRIORITY_ICONS: Record<Priority, typeof Flame> = {
-  High: Flame,
-  Medium: Circle,
-  Low: ArrowDown,
-};
-
-const PRIORITY_CLASSES: Record<Priority, string> = {
-  High: "tag tag-warn",
-  Medium: "tag tag-amber",
-  Low: "tag tag-sky",
 };
 
 const STATUS_CLASSES: Record<TaskStatus, string> = {

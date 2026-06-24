@@ -114,12 +114,12 @@ No `## CRITICAL SECURITY ISSUES` were found. The project already enforces auth p
 ### `components/ScrapeForm.tsx` — uncancelled `setTimeout` inside polling `setInterval`
 - **Lines**: ~59-87 (`pollRef.current = setInterval(...)`, with a nested `setTimeout(async () => {...}, 10000)` on `SUCCEEDED`).
 - **Problem**: When the poll succeeds, `stopPolling()` clears the interval, but the subsequent 10-second `setTimeout` that fetches the final lead count is not tracked/cleared. If the user navigates away during that 10-second window, the component may call `setState` after unmount.
-- **Status**: **Documented only — not fixed in this pass.** Tightly coupled to the scrape polling/cleanup flow (`pollRef`, `useEffect` cleanup at lines ~20-23); fixing requires adding a second ref and cleanup branch, with care not to disrupt the existing polling UX. Low real-world impact (React 18+ just warns; no crash), but worth addressing alongside any future refactor of `ScrapeForm`.
+- **Status**: **Fixed** — see Agency-CRM PR #5.
 
 ### Duplicated `PRIORITY_LABELS` / `PRIORITY_CLASSES` / `PRIORITY_ICONS` constants
 - **Files**: `components/CallListTable.tsx` (lines 9, 15, 21), `components/PriorityBadge.tsx` (lines 5, 11, 17), `components/dashboard/OpenTasksCard.tsx` (lines 7, 13), `components/TaskCard.tsx` (lines 10-26, exported and reused by `components/TaskDrawer.tsx`).
 - **Problem**: Four independent copies of essentially the same `Priority → label/class/icon` maps exist across the codebase. Any future change to priority labels/colors (e.g. adding a 4th priority level, or restyling) requires editing 4 files and risks them drifting out of sync.
-- **Status**: **Documented only — not fixed in this pass.** `TaskCard.tsx`'s exported versions are already the "canonical" copy (reused by `TaskDrawer.tsx`). Consolidating the other three into a shared `lib/priority-labels.ts` (mirroring the existing `lib/roadmap-labels.ts` pattern) would be a clean, low-risk follow-up but touches 4 files' imports — out of scope for a same-pass fix given the parallel mobile workstream.
+- **Status**: **Fixed** — see Agency-CRM PR #5.
 
 ### `lib/whatsapp.ts` — `toWhatsAppNumber` edge case for non-Israeli-formatted numbers
 - **Lines**: 1-5.
@@ -131,7 +131,7 @@ No `## CRITICAL SECURITY ISSUES` were found. The project already enforces auth p
   }
   ```
 - **Problem**: If a phone number is stored without a leading `0` and without a `972` country code (e.g. a raw 9-digit number, or a non-Israeli number), the function returns it unchanged, which would produce an invalid `wa.me` link.
-- **Status**: **Documented only — not fixed in this pass.** All current lead data is Israeli numbers in local `0XX-XXXXXXX` format (the upstream Apify scraper normalizes to this), so this is a theoretical edge case. A fix would need a policy decision (assume `972` prefix for any non-`0`-starting number? validate length?) — better decided with the business owner than guessed.
+- **Status**: **Fixed** — see Agency-CRM PR #5.
 
 ### `components/KanbanBoard.tsx` — `groups` record recomputed every render without memoization
 - **Problem**: The lead-grouping-by-status `groups` object is rebuilt on every render from `leads` with no `useMemo`. For the current small CRM dataset (tens of leads) this is negligible, but is worth noting if the lead volume grows significantly.
@@ -304,3 +304,7 @@ Run from `C:\Users\itays\Dropbox\איתי\O-I\Agency-CRM`:
 
 - **`npm run lint`** — ✅ Passes. 1 pre-existing warning (not introduced by this review): `react-hooks/exhaustive-deps` in `components/TaskDrawer.tsx:91` (see "Pre-existing, Verified-OK" above).
 - **`npm run build`** — ✅ Passes. Next.js 16.2.9 (Turbopack) production build compiles successfully, TypeScript checks pass, all 14 routes (including `/`, `/clients`, `/leads`, `/tasks`, `/settings`, `/login`, and all `/api/*` routes) build successfully.
+
+## Task 4 note (backlog closeout run)
+
+PROJECT_LOG.md backfill for this session's commits (`881e0f7`..`334498c`) was committed in the parent O-I repo, not here — see `O-I/PROJECT_LOG.md` (commit `1e2c765`) for the dated entries. No Agency-CRM code changes were needed for this task.

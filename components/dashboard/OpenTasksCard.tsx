@@ -2,19 +2,8 @@
 
 import { useState } from "react";
 import { CheckSquare } from "lucide-react";
-import type { Priority, TaskRecord } from "@/lib/types";
-
-const PRIORITY_LABELS: Record<Priority, string> = {
-  High: "גבוהה",
-  Medium: "בינונית",
-  Low: "נמוכה",
-};
-
-const PRIORITY_CLASSES: Record<Priority, string> = {
-  High: "tag-warn",
-  Medium: "tag-amber",
-  Low: "tag-sky",
-};
+import type { TaskRecord } from "@/lib/types";
+import { PRIORITY_LABELS, PRIORITY_CLASSES } from "@/lib/priority-labels";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("he-IL", {
@@ -90,7 +79,7 @@ export default function OpenTasksCard({ tasks: initialTasks }: OpenTasksCardProp
                     </span>
                   )}
                   {task.priority && (
-                    <span className={`tag ${PRIORITY_CLASSES[task.priority]}`}>
+                    <span className={PRIORITY_CLASSES[task.priority]}>
                       {PRIORITY_LABELS[task.priority]}
                     </span>
                   )}
