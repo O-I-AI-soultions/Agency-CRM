@@ -23,11 +23,15 @@ export default function ScrapeForm() {
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const safetyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const finalizeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
     return () => {
+      isMountedRef.current = false;
       if (pollRef.current) clearInterval(pollRef.current);
       if (safetyTimeoutRef.current) clearTimeout(safetyTimeoutRef.current);
+      if (finalizeTimeoutRef.current) clearTimeout(finalizeTimeoutRef.current);
     };
   }, []);
 
@@ -39,6 +43,10 @@ export default function ScrapeForm() {
     if (safetyTimeoutRef.current) {
       clearTimeout(safetyTimeoutRef.current);
       safetyTimeoutRef.current = null;
+    }
+    if (finalizeTimeoutRef.current) {
+      clearTimeout(finalizeTimeoutRef.current);
+      finalizeTimeoutRef.current = null;
     }
   };
 
@@ -121,7 +129,8 @@ export default function ScrapeForm() {
           stopPolling();
 
           if (runStatus === "SUCCEEDED") {
-            setTimeout(async () => {
+            finalizeTimeoutRef.current = setTimeout(async () => {
+              finalizeTimeoutRef.current = null;
               try {
                 const leadsCount = await fetchLeadCountDiff(leadCountBefore);
 
@@ -131,10 +140,12 @@ export default function ScrapeForm() {
                   body: JSON.stringify({ historyRecordId, leadsFound: leadsCount }),
                 });
 
+                if (!isMountedRef.current) return;
                 setLeadsFound(leadsCount);
                 setStatus("succeeded");
                 router.refresh();
               } catch {
+                if (!isMountedRef.current) return;
                 await markRunFailed(historyRecordId, "הסריקה נכשלה. נסה שוב.");
               }
             }, 10000);

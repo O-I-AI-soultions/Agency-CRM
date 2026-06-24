@@ -1,8 +1,17 @@
 import { useRef, useState } from "react";
-import { Phone, Globe, MapPin, Star } from "lucide-react";
+import { Phone, Globe, MapPin, Star, Clock } from "lucide-react";
 import type { KanbanStatus, LeadRecord } from "@/lib/types";
 import StatusActionButtons from "@/components/StatusActionButtons";
 import PriorityBadge from "@/components/PriorityBadge";
+import StalenessBadge from "@/components/StalenessBadge";
+
+function formatLastContacted(lastContacted: string | null): string {
+  if (!lastContacted) return "טרם נוצר קשר";
+  return new Date(lastContacted).toLocaleDateString("he-IL", {
+    day: "numeric",
+    month: "short",
+  });
+}
 
 function getHostname(url: string): string {
   try {
@@ -196,7 +205,10 @@ export default function LeadCard({
     >
       <div className="flex items-start justify-between gap-2">
         <h3 className="text-sm font-bold leading-snug text-foreground">{lead.businessName}</h3>
-        <PriorityBadge lead={lead} />
+        <div className="flex shrink-0 items-center gap-1">
+          <PriorityBadge lead={lead} />
+          <StalenessBadge lead={lead} />
+        </div>
       </div>
 
       {(lead.city || lead.googleRating != null) && (
@@ -210,6 +222,17 @@ export default function LeadCard({
           )}
         </div>
       )}
+
+      <div className="flex items-center gap-2 text-xs text-muted">
+        <span className="flex items-center gap-1">
+          <Clock size={12} />
+          {formatLastContacted(lead.lastContacted)}
+        </span>
+        <span aria-hidden>·</span>
+        <span>
+          {lead.followUpCount ?? 0} {lead.followUpCount === 1 ? "ניסיון יצירת קשר" : "ניסיונות יצירת קשר"}
+        </span>
+      </div>
 
       {lead.notes && <p className="line-clamp-2 text-xs text-muted">{lead.notes}</p>}
 
