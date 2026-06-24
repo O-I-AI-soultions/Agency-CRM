@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { Settings } from "lucide-react";
 import { redirect } from "next/navigation";
 import { getCurrentPartner } from "@/lib/auth-server";
-import { getPartnerSettings } from "@/lib/airtable";
+import { getPartnerSettings, listScrapeHistory } from "@/lib/airtable";
 import SettingsClient from "@/components/settings/SettingsClient";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +14,7 @@ export default async function SettingsPage() {
   }
 
   const settings = await getPartnerSettings(partner);
+  const scrapeHistory = await listScrapeHistory();
   const googleConfigured = !!(
     process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
   );
@@ -34,6 +35,7 @@ export default async function SettingsPage() {
           initialSettings={settings}
           googleConfigured={googleConfigured}
           apifyConfigured={apifyConfigured}
+          scrapeHistory={scrapeHistory}
         />
       </Suspense>
     </div>

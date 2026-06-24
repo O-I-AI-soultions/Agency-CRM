@@ -1,13 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import type { PartnerSettings } from "@/lib/types";
+import type { PartnerSettings, ScrapeHistoryRecord } from "@/lib/types";
+import { computeYieldRate } from "@/lib/types";
 
 interface PipelineTabProps {
   settings: PartnerSettings;
+  scrapeHistory: ScrapeHistoryRecord[];
 }
 
-export default function PipelineTab({ settings }: PipelineTabProps) {
+// How many of the most recent scrape runs to average over for the rollup
+// card below. `listScrapeHistory` already returns runs sorted newest-first,
+// so this is simply the first N records.
+const RECENT_RUNS_FOR_AVERAGE = 10;
+
+function computeAverageYieldRate(runs: ScrapeHistoryRecord[]): number | null {
+  const recent = runs.slice(0, RECENT_RUNS_FOR_AVERAGE);
+  if (recent.length === 0) return null;
+
+  const total = recent.reduce((sum, run) => sum + computeYieldRate(run.leadsFound, run.limit), 0);
+  return total / recent.length;
+}
+
+export default function PipelineTab({ settings, scrapeHistory }: PipelineTabProps) {
+  const averageYieldRate = computeAverageYieldRate(scrapeHistory);
   const [city, setCity] = useState(settings.scrapeDefaultCity ?? "");
   const [niche, setNiche] = useState(settings.scrapeDefaultNiche ?? "");
   const [limit, setLimit] = useState(settings.scrapeDefaultLimit ?? 50);
@@ -100,6 +116,20 @@ export default function PipelineTab({ settings }: PipelineTabProps) {
             )}
           </div>
         </div>
+      </div>
+
+      <div className="panel p-5">
+        <h3 className="mb-1 font-semibold text-foreground">תפוקת סריקות</h3>
+        <p className="mb-4 text-sm text-muted">
+          ממוצע תפוקה ({"לידים שנמצאו חלקי מספר תוצאות מבוקש"}) על פני {RECENT_RUNS_FOR_AVERAGE} הסריקות האחרונות.
+        </p>
+        {averageYieldRate === null ? (
+          <p className="text-sm text-muted">אין עדיין היסטוריית סריקות.</p>
+        ) : (
+          <p className="text-2xl font-black tabular-nums text-foreground">
+            {Math.round(averageYieldRate)}%
+          </p>
+        )}
       </div>
 
       <div className="panel p-5 opacity-50">

@@ -7,7 +7,7 @@ import AccountTab from "@/components/settings/AccountTab";
 import IntegrationsTab from "@/components/settings/IntegrationsTab";
 import AppearanceTab from "@/components/settings/AppearanceTab";
 import PipelineTab from "@/components/settings/PipelineTab";
-import type { PartnerSettings } from "@/lib/types";
+import type { PartnerSettings, ScrapeHistoryRecord } from "@/lib/types";
 import type { Partner } from "@/lib/auth";
 
 type Tab = "account" | "integrations" | "appearance" | "pipeline";
@@ -24,6 +24,17 @@ interface SettingsClientProps {
   initialSettings: PartnerSettings;
   googleConfigured: boolean;
   apifyConfigured: boolean;
+  scrapeHistory: ScrapeHistoryRecord[];
+}
+
+function computeInitialBanner(connected: string | null, error: string | null) {
+  if (connected === "google") return { type: "success" as const, message: "חשבון Google חובר בהצלחה ✓" };
+  if (error === "google_denied") return { type: "error" as const, message: "החיבור ל-Google בוטל" };
+  if (error === "google_token_failed")
+    return { type: "error" as const, message: "שגיאה בחיבור ל-Google — נסה שוב" };
+  if (error === "google_not_configured")
+    return { type: "error" as const, message: "Google OAuth לא מוגדר במשתני הסביבה" };
+  return null;
 }
 
 export default function SettingsClient({
@@ -31,6 +42,7 @@ export default function SettingsClient({
   initialSettings,
   googleConfigured,
   apifyConfigured,
+  scrapeHistory,
 }: SettingsClientProps) {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab") as Tab | null;
@@ -42,20 +54,10 @@ export default function SettingsClient({
   );
 
   const [banner, setBanner] = useState<{ type: "success" | "error"; message: string } | null>(
-    null
+    () => computeInitialBanner(connected, error)
   );
 
   useEffect(() => {
-    if (connected === "google") {
-      setBanner({ type: "success", message: "חשבון Google חובר בהצלחה ✓" });
-    } else if (error === "google_denied") {
-      setBanner({ type: "error", message: "החיבור ל-Google בוטל" });
-    } else if (error === "google_token_failed") {
-      setBanner({ type: "error", message: "שגיאה בחיבור ל-Google — נסה שוב" });
-    } else if (error === "google_not_configured") {
-      setBanner({ type: "error", message: "Google OAuth לא מוגדר במשתני הסביבה" });
-    }
-
     if (connected || error) {
       const timer = setTimeout(() => setBanner(null), 5000);
       return () => clearTimeout(timer);
@@ -105,7 +107,9 @@ export default function SettingsClient({
           />
         )}
         {activeTab === "appearance" && <AppearanceTab />}
-        {activeTab === "pipeline" && <PipelineTab settings={initialSettings} />}
+        {activeTab === "pipeline" && (
+          <PipelineTab settings={initialSettings} scrapeHistory={scrapeHistory} />
+        )}
       </div>
     </div>
   );

@@ -88,6 +88,7 @@ function mapClientRecord(record: Airtable.Record<Airtable.FieldSet>): ClientReco
     setupFee: (fields["Setup Fee"] as number) ?? null,
     monthlyRetainer: (fields["Monthly Retainer"] as number) ?? null,
     status: (fields["Status"] as ClientStatus) ?? null,
+    renewalDate: (fields["Renewal Date"] as string) ?? null,
   };
 }
 
@@ -145,6 +146,18 @@ export async function updateClientStatus(
   await base(CLIENTS_TABLE).update(recordId, {
     Status: status,
   });
+}
+
+export async function updateClientRenewalDate(
+  recordId: string,
+  renewalDate: string | null
+): Promise<void> {
+  // Airtable's FieldSet type doesn't accept `null` directly even though the
+  // API allows it to clear a field's value — cast like other nullable
+  // updates in this file (see PARTNERS_TABLE usage above).
+  await base(CLIENTS_TABLE).update(recordId, {
+    "Renewal Date": renewalDate,
+  } as Partial<Airtable.FieldSet>);
 }
 
 function mapScrapeHistoryRecord(
@@ -743,6 +756,9 @@ function mapNoteRecord(record: Airtable.Record<Airtable.FieldSet>): NoteRecord {
   };
 }
 
+// Note: this can reject if the Notes table/fields are missing or
+// misconfigured in Airtable. Callers should not assume it resolves —
+// use `getPartnerNoteSafe` below for call sites that must not crash.
 export async function getPartnerNote(partner: Partner): Promise<NoteRecord | null> {
   const records = await base(NOTES_TABLE)
     .select({ filterByFormula: `{Partner} = "${escapeFormulaValue(partner)}"`, maxRecords: 1 })
@@ -750,6 +766,18 @@ export async function getPartnerNote(partner: Partner): Promise<NoteRecord | nul
 
   const record = records[0];
   return record ? mapNoteRecord(record) : null;
+}
+
+// Defensive wrapper around getPartnerNote: a Notes-table schema problem
+// (missing table/fields) must not crash the whole dashboard page. Resolves
+// to null instead of rejecting, logging the error for visibility.
+export async function getPartnerNoteSafe(partner: Partner): Promise<NoteRecord | null> {
+  try {
+    return await getPartnerNote(partner);
+  } catch (err) {
+    console.error("getPartnerNoteSafe: failed to load note", err);
+    return null;
+  }
 }
 
 export async function getPartnerSettings(partner: Partner): Promise<PartnerSettings> {

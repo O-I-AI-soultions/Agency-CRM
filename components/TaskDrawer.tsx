@@ -14,7 +14,8 @@ import {
 import type { Partner } from "@/lib/auth";
 import CommentThread from "@/components/CommentThread";
 import LinkedRecordSearch from "@/components/LinkedRecordSearch";
-import { PRIORITY_LABELS, TASK_STATUS_LABELS } from "@/components/TaskCard";
+import { TASK_STATUS_LABELS } from "@/components/TaskCard";
+import { PRIORITY_LABELS } from "@/lib/priority-labels";
 
 function toDateInput(iso: string | null): string {
   if (!iso) return "";

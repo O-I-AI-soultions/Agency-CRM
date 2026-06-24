@@ -1,28 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Flame, Circle, ArrowDown, Star, Phone, MessageCircle, Check } from "lucide-react";
+import { Star, Phone, MessageCircle, Check } from "lucide-react";
 import type { LeadRecord, Priority } from "@/lib/types";
 import type { Partner } from "@/lib/auth";
 import { toWhatsAppNumber, buildWhatsAppMessage } from "@/lib/whatsapp";
-
-const PRIORITY_LABELS: Record<Priority, string> = {
-  High: "גבוהה",
-  Medium: "בינונית",
-  Low: "נמוכה",
-};
-
-const PRIORITY_CLASSES: Record<Priority, string> = {
-  High: "tag-warn",
-  Medium: "tag-amber",
-  Low: "tag-accent",
-};
-
-const PRIORITY_ICONS: Record<Priority, typeof Flame> = {
-  High: Flame,
-  Medium: Circle,
-  Low: ArrowDown,
-};
+import { PRIORITY_LABELS, PRIORITY_CLASSES, PRIORITY_ICONS } from "@/lib/priority-labels";
 
 interface CallListItem {
   lead: LeadRecord;
@@ -110,7 +93,7 @@ export default function CallListTable({
                 )}
               </td>
               <td className="px-4 py-3 text-sm">
-                <span className={`tag ${PRIORITY_CLASSES[level]}`}>
+                <span className={PRIORITY_CLASSES[level]}>
                   <PriorityIcon level={level} /> {PRIORITY_LABELS[level]}
                 </span>
               </td>
